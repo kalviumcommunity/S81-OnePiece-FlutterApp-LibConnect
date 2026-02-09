@@ -119,3 +119,7 @@ Files added for this assessment:
 - `pubspec.yaml` — minimal config to run the app
 
 
+
+### 6) Figma desing link
+
+  - https://shirt-manor-13222881.figma.site/
