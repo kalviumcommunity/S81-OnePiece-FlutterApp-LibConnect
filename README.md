@@ -123,3 +123,8 @@ Files added for this assessment:
 ### 6) Figma desing link
 
   - https://shirt-manor-13222881.figma.site/
+
+
+### 7)  High-Level Design (HLD) link
+
+  - https://radix-badge-14040611.figma.site/
