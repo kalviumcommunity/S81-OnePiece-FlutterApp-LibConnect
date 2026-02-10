@@ -1,7 +1,49 @@
 # S81-OnePiece-FlutterApp-LibConnect
-# S81-OnePiece-FlutterApp-LibConnect
 
 Our team of three members is developing LibConnect, a Flutter and Firebase-based mobile application aimed at modernizing public library management. The problem we are addressing is that many public libraries still depend on manual registers to manage book availability and borrowing, making the process slow, inaccurate, and inconvenient for both readers and librarians. Our proposed solution, LibConnect, allows users to easily search, reserve, and track books in real time while providing librarians with tools to manage inventory digitally. The project’s goal is to build a fully functional MVP that demonstrates seamless Flutter-Firebase integration with an intuitive user interface and real-time data synchronization. The core features include user authentication (sign up, login, logout) using Firebase Auth, book discovery and reservation using Firestore, and a user dashboard to track borrowed or reserved books. We are using Flutter for the frontend, Firebase Firestore for database management, Firebase Auth for authentication, and GitHub Actions for CI/CD. Within our team, the UI/UX Lead is responsible for designing and developing the app’s interface and navigation flow, the Firebase & Backend Lead handles database configuration and integration, and the Testing & Deployment Lead manages app testing, builds, and deployment. The four-week sprint is structured as follows: Week 1 focuses on idea finalization, Firebase setup, and UI wireframes; Week 2 covers authentication and core functionality; Week 3 is for integration and testing of CRUD operations; and Week 4 involves UI polishing, bug fixing, and MVP deployment. The success of the sprint will be measured by delivering a stable, demo-ready APK that successfully integrates Firebase services, provides smooth user interaction, and receives positive feedback during review.
+
+---
+
+## Sprint 2 - Flutter and Dart Basics
+
+### Project title and idea
+LibConnect is a Flutter and Firebase-based mobile app concept to modernize public library management with real-time book discovery, reservations, and user tracking.
+
+### Folder structure and purpose
+```
+lib/
+  main.dart           # App entry point and initial routing
+  screens/            # Individual UI screens
+  widgets/            # Reusable UI components
+  models/             # Data structures for the app domain
+  services/           # Firebase and API logic
+```
+
+How this supports modular design:
+- Screens focus on layout and navigation only, keeping UI concerns isolated.
+- Widgets keep UI building blocks reusable across screens.
+- Models standardize data flow between UI and services.
+- Services centralize Firebase and API calls to avoid duplicated logic.
+
+Naming conventions:
+- Files: snake_case (e.g., book_detail_screen.dart, auth_service.dart)
+- Classes: PascalCase (e.g., BookDetailScreen, AuthService)
+- Widgets: PascalCase with Widget suffix when appropriate (e.g., PrimaryButtonWidget)
+
+### Setup instructions
+1. Install Flutter SDK and set up Android Studio or VS Code with Flutter and Dart extensions.
+2. Verify install:
+	- `flutter doctor`
+3. Get packages and run:
+	- `flutter pub get`
+	- `flutter run`
+
+### Demo
+![LibConnect welcome screen](assets/demo.png)
+Replace assets/demo.png with a screenshot from your emulator or device.
+
+### Reflection
+I learned how Flutter composes UI from widgets, how state changes trigger rebuilds with `setState()`, and how a clean folder structure keeps UI, data, and services separated. This organization makes it easier to scale the app with new screens and features without creating tightly coupled code.
 
 ---
 
