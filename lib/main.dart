@@ -4,51 +4,29 @@ import 'package:firebase_core/firebase_core.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(LibConnectApp());
+  runApp(CounterApp());
 }
 
-class LibConnectApp extends StatefulWidget {
+class CounterApp extends StatefulWidget {
   @override
-  _LibConnectAppState createState() => _LibConnectAppState();
+  _CounterAppState createState() => _CounterAppState();
 }
 
-class _LibConnectAppState extends State<LibConnectApp> {
-  bool isReady = false;
+class _CounterAppState extends State<CounterApp> {
+  int count = 0;
 
-  void toggleReady() => setState(() => isReady = !isReady);
+  void increment() => setState(() => count++);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'LibConnect Welcome',
+      title: 'Flutter Assessment Counter',
       home: Scaffold(
-        appBar: AppBar(title: Text('Welcome')),
-        body: Center(
-          child: Padding(
-            padding: EdgeInsets.symmetric(horizontal: 24),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                Text(
-                  'LibConnect',
-                  style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
-                ),
-                SizedBox(height: 16),
-                Icon(Icons.local_library, size: 96, color: Colors.indigo),
-                SizedBox(height: 16),
-                Text(
-                  isReady ? 'Ready to explore the library!' : 'Tap the button to get started.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, color: isReady ? Colors.indigo : Colors.black87),
-                ),
-                SizedBox(height: 24),
-                ElevatedButton(
-                  onPressed: toggleReady,
-                  child: Text(isReady ? 'Reset' : 'Get Started'),
-                ),
-              ],
-            ),
-          ),
+        appBar: AppBar(title: Text('Stateful Widget Demo')),
+        body: Center(child: Text('Count: $count', style: TextStyle(fontSize: 28))),
+        floatingActionButton: FloatingActionButton(
+          onPressed: increment,
+          child: Icon(Icons.add),
         ),
       ),
     );
