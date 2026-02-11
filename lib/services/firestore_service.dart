@@ -12,3 +12,27 @@ class FirestoreService {
     return tasks.orderBy('createdAt', descending: true).snapshots();
   }
 }
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class FirestoreService {
+  final _db = FirebaseFirestore.instance;
+
+  Future<void> addNote(String text) async {
+    await _db.collection('notes').add({
+      'text': text,
+      'createdAt': Timestamp.now(),
+    });
+  }
+
+  Stream<QuerySnapshot> getNotes() {
+    return _db.collection('notes').snapshots();
+  }
+
+  Future<void> updateNote(String id, String text) async {
+    await _db.collection('notes').doc(id).update({'text': text});
+  }
+
+  Future<void> deleteNote(String id) async {
+    await _db.collection('notes').doc(id).delete();
+  }
+}
