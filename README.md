@@ -170,3 +170,6 @@ Files added for this assessment:
 ### 7)  High-Level Design (HLD) link
 
   - https://radix-badge-14040611.figma.site/
+
+  folder structure given
+  
