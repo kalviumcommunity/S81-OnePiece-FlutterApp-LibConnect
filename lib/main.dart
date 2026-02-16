@@ -1,34 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'screens/stateless_stateful_demo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(CounterApp());
+  runApp(const MyApp());
 }
 
-class CounterApp extends StatefulWidget {
-  @override
-  _CounterAppState createState() => _CounterAppState();
-}
-
-class _CounterAppState extends State<CounterApp> {
-  int count = 0;
-
-  void increment() => setState(() => count++);
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Assessment Counter',
-      home: Scaffold(
-        appBar: AppBar(title: Text('Stateful Widget Demo')),
-        body: Center(child: Text('Count: $count', style: TextStyle(fontSize: 28))),
-        floatingActionButton: FloatingActionButton(
-          onPressed: increment,
-          child: Icon(Icons.add),
-        ),
+      title: 'Flutter Widget Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
       ),
+      debugShowCheckedModeBanner: false,
+      home: const StatelessStatefulDemo(),
     );
   }
 }

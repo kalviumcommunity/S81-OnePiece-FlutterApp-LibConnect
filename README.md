@@ -172,4 +172,185 @@ Files added for this assessment:
   - https://radix-badge-14040611.figma.site/
 
   folder structure given
+
+
+---
+
+## Stateless vs Stateful Widgets — Interactive Demo
+
+This section demonstrates the practical differences between **StatelessWidget** and **StatefulWidget** through an interactive demo app located at [lib/screens/stateless_stateful_demo.dart](lib/screens/stateless_stateful_demo.dart).
+
+### Understanding the Widget Types
+
+#### 🔷 Stateless Widget
+- **Definition**: A widget that does not store any mutable state
+- **Characteristics**: 
+  - Immutable — once built, it doesn't change
+  - Rebuilds only when parent passes new data
+  - Lightweight and efficient for static content
+- **Use Cases**: Labels, icons, headers, static text, images
+
+**Example in Demo**: `DemoHeader` widget
+```dart
+class DemoHeader extends StatelessWidget {
+  final String title;
+  final String subtitle;
+
+  const DemoHeader({
+    Key? key,
+    required this.title,
+    required this.subtitle,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      // Static UI that displays the same content
+      // Changes only if parent passes new title/subtitle
+    );
+  }
+}
+```
+
+#### 🔶 Stateful Widget
+- **Definition**: A widget that maintains internal state that can change
+- **Characteristics**:
+  - Mutable state stored in State object
+  - Can update UI dynamically using `setState()`
+  - Responds to user interactions, animations, or data changes
+- **Use Cases**: Forms, counters, toggles, animations, interactive elements
+
+**Example in Demo**: `StatelessStatefulDemo` widget
+```dart
+class _StatelessStatefulDemoState extends State<StatelessStatefulDemo> {
+  int _counter = 0;  // Mutable state
+  bool _isDarkMode = false;
+  Color _selectedColor = Colors.blue;
+
+  void _incrementCounter() {
+    setState(() {
+      _counter++;  // Update state and rebuild UI
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    // UI rebuilds when setState() is called
+  }
+}
+```
+
+### Demo App Features
+
+The demo app showcases **4 interactive sections** that demonstrate state management:
+
+#### 1️⃣ **Counter Demo**
+- Increment, decrement, and reset buttons
+- Displays real-time count updates
+- Demonstrates: State changes trigger UI updates
+
+#### 2️⃣ **Color Changer**
+- Tap button to cycle through 6 different colors
+- Animated circular color preview
+- Demonstrates: Visual state changes with smooth transitions
+
+#### 3️⃣ **Favorite Toggle**
+- Heart icon that fills/unfills on tap
+- Animated icon transition
+- Demonstrates: Boolean state and conditional rendering
+
+#### 4️⃣ **Theme Mode Toggle**
+- Switch between Light and Dark modes
+- Changes background color of entire app
+- Demonstrates: Global state affecting multiple UI elements
+
+### Key Concepts Demonstrated
+
+**setState() Method**:
+```dart
+void _toggleTheme() {
+  setState(() {
+    _isDarkMode = !_isDarkMode;  // Change state
+  });
+  // Flutter automatically rebuilds affected widgets
+}
+```
+
+**Stateless vs Stateful Comparison**:
+- **Header (Stateless)**: Never changes unless parent rebuilds it
+- **Interactive sections (Stateful)**: Change dynamically based on user actions
+
+**Reactive UI**:
+- User taps button → `setState()` called → Widget marked dirty → Flutter rebuilds → UI updates
+- Only affected widgets rebuild, not the entire screen
+
+### Running the Demo
+
+1. **Launch the app**:
+   ```bash
+   flutter run
+   ```
+
+2. **Interact with the features**:
+   - Press +/- buttons to see counter change
+   - Tap "Change Color" to cycle through colors
+   - Tap heart icon to toggle favorite
+   - Use switch or app bar icon to toggle theme
+
+3. **Observe the behavior**:
+   - Notice how the static header never changes
+   - See how interactive elements respond immediately
+   - Watch animations and state transitions
+
+### File Structure
+```
+lib/
+  main.dart                          # Entry point, now launches demo
+  screens/
+    stateless_stateful_demo.dart     # Complete interactive demo
+    dashboard.dart
+    login_screen.dart
+    responsive_home.dart
+    signup_screen.dart
+```
+
+### Learning Outcomes
+
+After exploring this demo, you should understand:
+- ✅ When to use StatelessWidget vs StatefulWidget
+- ✅ How `setState()` triggers UI updates
+- ✅ How to manage multiple state variables
+- ✅ How state changes flow through the widget tree
+- ✅ Best practices for organizing stateful logic
+
+### Code Highlights
+
+**Multiple State Variables**:
+```dart
+int _counter = 0;           // Number state
+bool _isDarkMode = false;   // Boolean state
+Color _selectedColor = Colors.blue;  // Object state
+bool _isIconFavorite = false;
+```
+
+**Organized State Methods**:
+```dart
+void _incrementCounter() { setState(() => _counter++); }
+void _toggleTheme() { setState(() => _isDarkMode = !_isDarkMode); }
+void _changeColor() { /* Cycle through colors */ }
+```
+
+**Conditional UI Based on State**:
+```dart
+backgroundColor: _isDarkMode ? Colors.grey.shade900 : Colors.grey.shade100,
+icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
+```
+
+### Next Steps
+
+- Experiment by adding your own interactive features
+- Try combining multiple state changes in one action
+- Explore Flutter's `AnimatedContainer` for smooth transitions
+- Practice separating stateless presentation from stateful logic
   
+
