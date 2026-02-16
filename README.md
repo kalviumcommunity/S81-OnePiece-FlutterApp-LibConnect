@@ -108,56 +108,66 @@ void main() {
 }
 ```
 
-### 4) Reactive UI — Counter App
-The demo app uses a `StatefulWidget` to hold a `count` integer. Calling `setState()` updates the state and signals Flutter to re-run `build()` for affected widgets — Flutter then efficiently repaints only the necessary parts of the widget tree.
+### 4) Widget Tree Demo — Profile Card
+This demo app uses nested widgets to show parent-child relationships and visible state updates. The UI is a profile card with buttons that change the background highlight, toggle bio visibility, and increment likes.
 
-Counter core (in `lib/main.dart`):
+Widget tree (simplified):
+```
+MaterialApp
+ ┗ Scaffold
+	 ┣ AppBar
+	 ┗ Body
+		 ┗ Center
+			 ┗ SingleChildScrollView
+				 ┗ Column
+					 ┣ AnimatedContainer
+					 │  ┗ Column
+					 │     ┣ Row
+					 │     │  ┣ CircleAvatar
+					 │     │  ┣ Column
+					 │     │  │  ┣ Text (name)
+					 │     │  │  ┗ Text (status)
+					 │     │  ┗ Icon (star)
+					 │     ┣ Text (bio)
+					 │     ┗ Row
+					 │        ┣ ElevatedButton (Like)
+					 │        ┗ OutlinedButton (Toggle Bio)
+					 ┣ ElevatedButton (Highlight Card)
+					 ┗ Text (helper)
+```
+
+Reactive UI behavior:
+- `setState()` updates `isHighlighted`, `showBio`, or `likes`.
+- Flutter rebuilds only the widgets that depend on those values.
+- The animated container and button labels update without redrawing the entire UI.
+
+Core demo (in `lib/main.dart`):
 ```dart
-import 'package:flutter/material.dart';
+class _WidgetTreeDemoAppState extends State<WidgetTreeDemoApp> {
+  bool isHighlighted = false;
+  bool showBio = true;
+  int likes = 0;
 
-void main() => runApp(CounterApp());
-
-class CounterApp extends StatefulWidget {
-	@override
-	_CounterAppState createState() => _CounterAppState();
-}
-
-class _CounterAppState extends State<CounterApp> {
-	int count = 0;
-
-	void increment() => setState(() => count++);
-
-	@override
-	Widget build(BuildContext context) {
-		return MaterialApp(
-			title: 'Flutter Assessment Counter',
-			home: Scaffold(
-				appBar: AppBar(title: Text('Stateful Widget Demo')),
-				body: Center(child: Text('Count: $count', style: TextStyle(fontSize: 28))),
-				floatingActionButton: FloatingActionButton(
-					onPressed: increment,
-					child: Icon(Icons.add),
-				),
-			),
-		);
-	}
+  void toggleHighlight() => setState(() => isHighlighted = !isHighlighted);
+  void toggleBio() => setState(() => showBio = !showBio);
+  void addLike() => setState(() => likes++);
 }
 ```
 
-What happens when you press the button:
-- `increment()` updates `count`.
-- `setState()` marks the widget dirty and schedules a rebuild.
-- Flutter re-renders just the widgets that depend on the changed state.
+Screenshots:
+- Initial state: ![Widget tree demo initial state](assets/widget_tree_before.png)
+- After state change: ![Widget tree demo updated state](assets/widget_tree_after.png)
 
 ### 5) Documentation Requirements (for submission)
-- Difference between `StatelessWidget` and `StatefulWidget`: see section 2 above.
-- How Flutter uses the widget tree to build reactive UIs: state changes trigger rebuilds; Flutter uses element/widget/render object trees to update efficiently.
+- What is a widget tree? A hierarchical structure where each widget is a node and parents compose children to form the UI.
+- How does Flutter's reactive model work? `setState()` marks widgets dirty, then Flutter rebuilds only the affected parts of the tree.
+- Why does Flutter rebuild only parts of the tree? The framework diffs widgets and reuses elements/render objects for unchanged subtrees.
 - Why Dart is ideal: fast AOT performance for release, JIT + Hot Reload for developer productivity, strong typing and null safety for fewer runtime errors.
 
 
 
 Files added for this assessment:
-- `lib/main.dart` — counter app source
+- `lib/main.dart` — widget tree demo app source
 - `pubspec.yaml` — minimal config to run the app
 
 
