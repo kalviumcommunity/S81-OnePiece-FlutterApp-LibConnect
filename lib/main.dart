@@ -36,12 +36,16 @@ class _WidgetTreeDemoAppState extends State<WidgetTreeDemoApp> {
 
   @override
   Widget build(BuildContext context) {
-    final Color cardColor = isHighlighted ? Colors.orange.shade100 : Colors.blueGrey.shade50;
+    final Color cardColor =
+        isHighlighted ? Colors.orange.shade100 : Colors.blueGrey.shade50;
 
     return MaterialApp(
+      debugShowCheckedModeBanner: false,
       title: 'Widget Tree Demo',
       home: Scaffold(
-        appBar: AppBar(title: const Text('Widget Tree Demo')),
+        appBar: AppBar(
+          title: const Text('Widget Tree Demo'),
+        ),
         body: Center(
           child: SingleChildScrollView(
             padding: const EdgeInsets.all(20),
@@ -77,18 +81,27 @@ class _WidgetTreeDemoAppState extends State<WidgetTreeDemoApp> {
                             children: [
                               const Text(
                                 'Rina Patel',
-                                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontWeight: FontWeight.bold),
                               ),
                               Text(
-                                isHighlighted ? 'Featured Reader' : 'Active Reader',
-                                style: TextStyle(color: Colors.grey.shade700),
+                                isHighlighted
+                                    ? 'Featured Reader'
+                                    : 'Active Reader',
+                                style:
+                                    TextStyle(color: Colors.grey.shade700),
                               ),
                             ],
                           ),
                           const Spacer(),
                           Icon(
-                            isHighlighted ? Icons.star : Icons.star_border,
-                            color: isHighlighted ? Colors.orange : Colors.grey,
+                            isHighlighted
+                                ? Icons.star
+                                : Icons.star_border,
+                            color: isHighlighted
+                                ? Colors.orange
+                                : Colors.grey,
                           ),
                         ],
                       ),
@@ -109,7 +122,8 @@ class _WidgetTreeDemoAppState extends State<WidgetTreeDemoApp> {
                           const SizedBox(width: 12),
                           OutlinedButton(
                             onPressed: toggleBio,
-                            child: Text(showBio ? 'Hide Bio' : 'Show Bio'),
+                            child:
+                                Text(showBio ? 'Hide Bio' : 'Show Bio'),
                           ),
                         ],
                       ),
@@ -121,7 +135,9 @@ class _WidgetTreeDemoAppState extends State<WidgetTreeDemoApp> {
                   width: double.infinity,
                   child: ElevatedButton(
                     onPressed: toggleHighlight,
-                    child: Text(isHighlighted ? 'Remove Highlight' : 'Highlight Card'),
+                    child: Text(isHighlighted
+                        ? 'Remove Highlight'
+                        : 'Highlight Card'),
                   ),
                 ),
                 const SizedBox(height: 8),
