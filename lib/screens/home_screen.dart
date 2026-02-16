@@ -1,7 +1,4 @@
 import 'package:flutter/material.dart';
-import 'screens/stateless_stateful_demo.dart';
-import 'screens/hot_reload_demo.dart';
-import 'screens/login_screen.dart';
 
 /// Main navigation screen for accessing different demos
 class HomeScreen extends StatelessWidget {
@@ -98,12 +95,7 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.hot_tub,
                       onTap: () {
                         debugPrint('📍 Navigating to Hot Reload Demo');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const HotReloadDemo(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/hot-reload');
                       },
                     ),
                     
@@ -117,12 +109,7 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.widgets,
                       onTap: () {
                         debugPrint('📍 Navigating to Stateless/Stateful Demo');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const StatelessStatefulDemo(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/stateless-stateful');
                       },
                     ),
                     
@@ -136,12 +123,21 @@ class HomeScreen extends StatelessWidget {
                       icon: Icons.cloud,
                       onTap: () {
                         debugPrint('📍 Navigating to Login Screen');
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => const LoginScreen(),
-                          ),
-                        );
+                        Navigator.pushNamed(context, '/login');
+                      },
+                    ),
+                    
+                    const SizedBox(height: 16),
+                    
+                    _buildDemoCard(
+                      context,
+                      title: '🧭 Simple Navigation',
+                      description: 'Learn basic multi-screen navigation',
+                      color: Colors.teal,
+                      icon: Icons.navigation,
+                      onTap: () {
+                        debugPrint('📍 Navigating to Simple Navigation Demo');
+                        Navigator.pushNamed(context, '/simple-home');
                       },
                     ),
                   ],
