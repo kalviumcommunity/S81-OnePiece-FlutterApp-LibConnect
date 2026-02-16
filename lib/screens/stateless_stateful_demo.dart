@@ -81,6 +81,7 @@ class _StatelessStatefulDemoState extends State<StatelessStatefulDemo> {
   void _incrementCounter() {
     setState(() {
       _counter++;
+      debugPrint('✨ Counter incremented to: $_counter');
     });
   }
 
@@ -88,6 +89,7 @@ class _StatelessStatefulDemoState extends State<StatelessStatefulDemo> {
   void _decrementCounter() {
     setState(() {
       if (_counter > 0) _counter--;
+      debugPrint('⬇️ Counter decremented to: $_counter');
     });
   }
 
@@ -95,6 +97,7 @@ class _StatelessStatefulDemoState extends State<StatelessStatefulDemo> {
   void _resetCounter() {
     setState(() {
       _counter = 0;
+      debugPrint('🔄 Counter reset to: $_counter');
     });
   }
 
@@ -102,6 +105,7 @@ class _StatelessStatefulDemoState extends State<StatelessStatefulDemo> {
   void _toggleTheme() {
     setState(() {
       _isDarkMode = !_isDarkMode;
+      debugPrint('🌓 Theme changed to: ${_isDarkMode ? "Dark" : "Light"} mode');
     });
   }
 
@@ -111,6 +115,7 @@ class _StatelessStatefulDemoState extends State<StatelessStatefulDemo> {
       int currentIndex = _colors.indexOf(_selectedColor);
       int nextIndex = (currentIndex + 1) % _colors.length;
       _selectedColor = _colors[nextIndex];
+      debugPrint('🎨 Color changed to: ${_selectedColor.toString()}');
     });
   }
 
@@ -118,6 +123,7 @@ class _StatelessStatefulDemoState extends State<StatelessStatefulDemo> {
   void _toggleFavorite() {
     setState(() {
       _isIconFavorite = !_isIconFavorite;
+      debugPrint('❤️ Favorite toggled: ${_isIconFavorite ? "Added" : "Removed"}');
     });
   }
 
