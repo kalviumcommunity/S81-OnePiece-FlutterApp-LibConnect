@@ -6,6 +6,7 @@ import 'screens/stateless_stateful_demo.dart';
 import 'screens/login_screen.dart';
 import 'screens/dashboard.dart';
 import 'screens/simple_navigation_demo.dart';
+import 'screens/scrollable_views.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -40,6 +41,7 @@ class MyApp extends StatelessWidget {
         '/dashboard': (context) => const Dashboard(),
         '/simple-home': (context) => const SimpleHomeScreen(),
         '/simple-second': (context) => const SimpleSecondScreen(),
+        '/scrollable-views': (context) => const ScrollableViews(),
       },
       
       // Handle unknown routes
