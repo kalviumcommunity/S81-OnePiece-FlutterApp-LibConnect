@@ -140,6 +140,20 @@ class HomeScreen extends StatelessWidget {
                         Navigator.pushNamed(context, '/simple-home');
                       },
                     ),
+
+                    const SizedBox(height: 16),
+
+                    _buildDemoCard(
+                      context,
+                      title: '📚 Scrollable Views',
+                      description: 'ListView & GridView implementation',
+                      color: Colors.indigo,
+                      icon: Icons.view_quilt,
+                      onTap: () {
+                        debugPrint('📍 Navigating to Scrollable Views Demo');
+                        Navigator.pushNamed(context, '/scrollable-views');
+                      },
+                    ),
                   ],
                 ),
               ),
