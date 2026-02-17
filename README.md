@@ -484,14 +484,14 @@ void _incrementCounter() {
 **Emoji-tagged logs for clarity:**
 ```dart
 ✨ — Success/completion
-❌ — Errors
-⚠️ — Warnings
-🔄 — Process started
-✅ — Validated/confirmed
-📍 — Navigation
-🎨 — UI changes
-💾 — Data operations
-🔐 — Auth events
+487: ❌ — Errors
+488: ⚠️ — Warnings
+489: 🔄 — Process started
+490: ✅ — Validated/confirmed
+491: 📍 — Navigation
+492: 🎨 — UI changes
+493: 💾 — Data operations
+494: 🔐 — Auth events
 ```
 
 ### 🛠️ Flutter DevTools
@@ -707,5 +707,78 @@ You now have:
 
 **Master these tools to become a highly productive Flutter developer!** 🎉
 
-  
+---
 
+## Scrollable Views Implementation
+
+This section details the implementation of scrollable layouts using `ListView` and `GridView` widgets, which are essential for displaying large sets of data dynamically.
+
+### Overview
+
+The `ScrollableViews` screen ([lib/screens/scrollable_views.dart](lib/screens/scrollable_views.dart)) demonstrates:
+1.  **Horizontal ListView**: A list of featured books scrolling horizontally.
+2.  **Vertical GridView**: A grid of book categories scrolling vertically.
+
+### Code Snippets
+
+#### ListView.builder
+Used for the horizontal list of featured books:
+```dart
+ListView.builder(
+  scrollDirection: Axis.horizontal,
+  itemCount: 8,
+  itemBuilder: (context, index) {
+    return Container(
+      // ... styling (width, decorations)
+      child: Column(
+        children: [
+          // ... book cover and details
+        ],
+      ),
+    );
+  },
+)
+```
+
+#### GridView.builder
+Used for the vertical grid of categories:
+```dart
+GridView.builder(
+  physics: const NeverScrollableScrollPhysics(), // Scroll handled by parent
+  shrinkWrap: true,
+  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+    crossAxisCount: 2,
+    crossAxisSpacing: 16,
+    mainAxisSpacing: 16,
+    childAspectRatio: 1.5,
+  ),
+  itemCount: 6,
+  itemBuilder: (context, index) {
+    return Container(
+      // ... styling (color, icon, text)
+    );
+  },
+)
+```
+
+### Reflection
+
+**How does ListView differ from GridView in design use cases?**
+`ListView` is designed for linear lists of items, either vertical or horizontal. It's ideal for news feeds, chat logs, or setting menus. `GridView` arranges items in a 2D array (rows and columns), making it perfect for photo galleries, product catalogs, or dashboard icons where seeing multiple items side-by-side provides a better overview.
+
+**Why is ListView.builder() more efficient for large lists?**
+`ListView.builder()` creates items lazily. It only builds the widgets that are currently visible on the screen. As the user scrolls, new items are built and old ones are recycled/destroyed. This significantly reduces memory usage and improves performance compared to the default constructor which builds all children at once.
+
+**What can you do to prevent lag or overflow errors in scrollable views?**
+-   Use `.builder` constructors for large or infinite lists.
+-   Avoid nesting scrollable widgets with the same scroll direction without proper constraints (e.g., wrap the inner one in `SizedBox` or use `shrinkWrap: true` and `NeverScrollableScrollPhysics` if scrolling should be handled by a parent).
+-   Use `const` constructors for static widgets to reduce rebuilds.
+-   Optimize item build methods to be lightweight.
+
+### Screenshots & Demo
+
+| ListView | GridView |
+|----------|----------|
+| ![ListView Screenshot](assets/listview_screenshot.png) | ![GridView Screenshot](assets/gridview_screenshot.png) |
+
+**Video Demo**: [Link to Video Demo](YOUR_VIDEO_LINK_HERE)
