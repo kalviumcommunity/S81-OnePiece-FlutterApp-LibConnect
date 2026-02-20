@@ -7,6 +7,7 @@ import 'screens/login_screen.dart';
 import 'screens/dashboard.dart';
 import 'screens/simple_navigation_demo.dart';
 import 'screens/scrollable_views.dart';
+import 'screens/state_management_demo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -42,6 +43,7 @@ class MyApp extends StatelessWidget {
         '/simple-home': (context) => const SimpleHomeScreen(),
         '/simple-second': (context) => const SimpleSecondScreen(),
         '/scrollable-views': (context) => const ScrollableViews(),
+        '/state-management': (context) => StateManagementDemo(),
       },
       
       // Handle unknown routes

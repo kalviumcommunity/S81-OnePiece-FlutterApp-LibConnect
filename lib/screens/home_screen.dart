@@ -154,6 +154,20 @@ class HomeScreen extends StatelessWidget {
                         Navigator.pushNamed(context, '/scrollable-views');
                       },
                     ),
+
+                    const SizedBox(height: 16),
+
+                    _buildDemoCard(
+                      context,
+                      title: '⚡ State Management',
+                      description: 'setState() for interactive UIs',
+                      color: Colors.green,
+                      icon: Icons.bolt,
+                      onTap: () {
+                        debugPrint('📍 Navigating to State Management Demo');
+                        Navigator.pushNamed(context, '/state-management');
+                      },
+                    ),
                   ],
                 ),
               ),
