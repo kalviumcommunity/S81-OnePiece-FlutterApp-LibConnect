@@ -365,6 +365,68 @@ icon: Icon(_isDarkMode ? Icons.light_mode : Icons.dark_mode),
 
 ---
 
+## Sprint 2 - Handling User Input with Forms
+
+### Project Title and Description
+User Input Form for LibConnect: a simple form screen that collects a name and email, validates input, and shows submission feedback.
+
+### Code Snippets
+
+Text fields:
+```dart
+TextFormField(
+  controller: _nameController,
+  decoration: const InputDecoration(
+    labelText: 'Name',
+    border: OutlineInputBorder(),
+  ),
+  validator: (value) {
+    if (value == null || value.trim().isEmpty) {
+      return 'Please enter your name.';
+    }
+    return null;
+  },
+),
+```
+
+Submit button:
+```dart
+ElevatedButton(
+  onPressed: _handleSubmit,
+  child: const Text('Submit'),
+),
+```
+
+Validation and feedback:
+```dart
+void _handleSubmit() {
+  final isValid = _formKey.currentState?.validate() ?? false;
+  if (!isValid) {
+    return;
+  }
+
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('Form submitted successfully.')),
+  );
+
+  _formKey.currentState?.reset();
+  _nameController.clear();
+  _emailController.clear();
+}
+```
+
+### Screenshots
+- Form before input: assets/user_input_before.png
+- Validation errors: assets/user_input_error.png
+- Success message: assets/user_input_success.png
+
+### Reflection
+- Why is input validation important? It prevents invalid data from reaching the app logic or backend and improves user trust by providing immediate, clear feedback.
+- What is the difference between TextField and TextFormField? `TextFormField` integrates with `Form` and supports validation and form state, while `TextField` is a standalone input widget.
+- How does form state management simplify validation? A single `FormState` manages validation across multiple fields and provides a consistent way to validate or reset the entire form.
+
+---
+
 ## 🔥 Hot Reload & Debugging Tools Demo
 
 This section demonstrates **Flutter's Hot Reload feature**, **Debug Console usage**, and **Flutter DevTools** — essential tools for rapid Flutter development.
