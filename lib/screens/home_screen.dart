@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import '../widgets/info_card.dart';
+import '../widgets/like_button.dart';
 
 /// Main navigation screen for accessing different demos
 class HomeScreen extends StatelessWidget {
@@ -82,6 +84,20 @@ class HomeScreen extends StatelessWidget {
               ),
               
               const SizedBox(height: 30),
+
+              const InfoCard(
+                title: 'Reusable Stateless Widget',
+                subtitle: 'This InfoCard is shared across multiple screens.',
+                icon: Icons.widgets,
+                iconColor: Colors.teal,
+              ),
+
+              const Align(
+                alignment: Alignment.centerRight,
+                child: LikeButton(),
+              ),
+
+              const SizedBox(height: 12),
               
               // Demo Options
               Expanded(
@@ -251,7 +267,7 @@ class HomeScreen extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 18,
                         fontWeight: FontWeight.bold,
-                        color: color.shade700,
+                        color: color,
                       ),
                     ),
                     const SizedBox(height: 4),

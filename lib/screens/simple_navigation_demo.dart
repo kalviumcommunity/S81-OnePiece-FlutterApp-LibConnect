@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import '../widgets/custom_button.dart';
+import '../widgets/info_card.dart';
+import '../widgets/like_button.dart';
 
 /// Simple Home Screen - Starting point of navigation
 class SimpleHomeScreen extends StatelessWidget {
@@ -53,20 +56,14 @@ class SimpleHomeScreen extends StatelessWidget {
                 const SizedBox(height: 40),
                 
                 // Navigation using Navigator.pushNamed()
-                ElevatedButton.icon(
+                CustomButton(
+                  label: 'Go to Second Screen',
+                  icon: Icons.arrow_forward,
+                  color: Colors.blue,
                   onPressed: () {
                     debugPrint('🚀 Navigating to Second Screen using named route');
                     Navigator.pushNamed(context, '/simple-second');
                   },
-                  icon: const Icon(Icons.arrow_forward),
-                  label: const Text('Go to Second Screen'),
-                  style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    textStyle: const TextStyle(fontSize: 18),
-                  ),
                 ),
                 
                 const SizedBox(height: 20),
@@ -94,37 +91,11 @@ class SimpleHomeScreen extends StatelessWidget {
                 
                 const SizedBox(height: 40),
                 
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.amber.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.amber.shade200),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.info_outline, color: Colors.amber.shade700),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Navigation Methods',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.amber.shade900,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Named Route: Navigator.pushNamed()\nDirect Push: Navigator.push()',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 13),
-                      ),
-                    ],
-                  ),
+                const InfoCard(
+                  title: 'Navigation Methods',
+                  subtitle: 'Named Route: Navigator.pushNamed()\nDirect Push: Navigator.push()',
+                  icon: Icons.info_outline,
+                  iconColor: Colors.amber,
                 ),
               ],
             ),
@@ -189,21 +160,14 @@ class SimpleSecondScreen extends StatelessWidget {
                 const SizedBox(height: 40),
                 
                 // Navigation using Navigator.pop()
-                ElevatedButton.icon(
+                CustomButton(
+                  label: 'Back to Home',
+                  icon: Icons.arrow_back,
+                  color: Colors.green,
                   onPressed: () {
                     debugPrint('⬅️ Going back to Home Screen using Navigator.pop()');
                     Navigator.pop(context);
                   },
-                  icon: const Icon(Icons.arrow_back),
-                  label: const Text('Back to Home'),
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.green,
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 32,
-                      vertical: 16,
-                    ),
-                    textStyle: const TextStyle(fontSize: 18),
-                  ),
                 ),
                 
                 const SizedBox(height: 20),
@@ -231,37 +195,11 @@ class SimpleSecondScreen extends StatelessWidget {
                 
                 const SizedBox(height: 40),
                 
-                Container(
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.blue.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.blue.shade200),
-                  ),
-                  child: Column(
-                    children: [
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.layers, color: Colors.blue.shade700),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Navigation Stack',
-                            style: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              color: Colors.blue.shade900,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      const Text(
-                        'Current Stack:\nHome → Second (You are here)',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(fontSize: 13),
-                      ),
-                    ],
-                  ),
+                const InfoCard(
+                  title: 'Navigation Stack',
+                  subtitle: 'Current Stack:\nHome → Second (You are here)',
+                  icon: Icons.layers,
+                  iconColor: Colors.blue,
                 ),
               ],
             ),
@@ -313,6 +251,8 @@ class SimpleThirdScreen extends StatelessWidget {
                   ),
                   textAlign: TextAlign.center,
                 ),
+                const SizedBox(height: 12),
+                const LikeButton(),
                 const SizedBox(height: 12),
                 const Text(
                   'You can go back step by step or jump to home',
