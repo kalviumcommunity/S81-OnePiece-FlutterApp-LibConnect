@@ -8,67 +8,47 @@ class ResponsiveHome extends StatelessWidget {
     final screenSize = MediaQuery.of(context).size;
     final screenWidth = screenSize.width;
     final screenHeight = screenSize.height;
+    final orientation = MediaQuery.of(context).orientation;
 
-    final bool isTablet = screenWidth > 600;
-
-    final double padding = isTablet ? 24 : 16;
-    final double titleSize = isTablet ? 28 : 22;
+    final bool isTabletByWidth = screenWidth >= 600;
+    final bool isLandscape = orientation == Orientation.landscape;
+    final double sectionSpacing = screenHeight * 0.02;
+    final double horizontalPadding = screenWidth * 0.06;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          "Responsive Home",
-          style: TextStyle(fontSize: titleSize),
-        ),
+        title: const Text('Responsive Design Demo'),
         centerTitle: true,
       ),
       body: Padding(
-        padding: EdgeInsets.all(padding),
+        padding: EdgeInsets.symmetric(
+          horizontal: horizontalPadding.clamp(16, 40),
+          vertical: 16,
+        ),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            Text(
+              'Screen: ${screenWidth.toStringAsFixed(0)} x ${screenHeight.toStringAsFixed(0)}',
+              style: Theme.of(context).textTheme.bodyMedium,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Orientation: ${isLandscape ? 'Landscape' : 'Portrait'}',
+              style: Theme.of(context).textTheme.bodySmall,
+              textAlign: TextAlign.center,
+            ),
+            SizedBox(height: sectionSpacing),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
-                  if (isTablet) {
-                    return GridView.builder(
-                      gridDelegate:
-                          const SliverGridDelegateWithFixedCrossAxisCount(
-                        crossAxisCount: 2,
-                        crossAxisSpacing: 16,
-                        mainAxisSpacing: 16,
-                        childAspectRatio: 1.2,
-                      ),
-                      itemCount: 4,
-                      itemBuilder: (context, index) {
-                        return _buildCard(index, isTablet);
-                      },
-                    );
-                  } else {
-                    return ListView.builder(
-                      itemCount: 4,
-                      itemBuilder: (context, index) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 12),
-                          child: _buildCard(index, isTablet),
-                        );
-                      },
-                    );
+                  final bool isTabletLayout = constraints.maxWidth >= 600 || isTabletByWidth;
+                  if (!isTabletLayout) {
+                    return _buildMobileLayout(context, screenWidth, screenHeight);
                   }
+                  return _buildTabletLayout(context, screenWidth, screenHeight);
                 },
-              ),
-            ),
-            const SizedBox(height: 12),
-            SizedBox(
-              width: double.infinity,
-              height: screenHeight * 0.07,
-              child: ElevatedButton(
-                onPressed: () {},
-                child: FittedBox(
-                  child: Text(
-                    "Continue",
-                    style: TextStyle(fontSize: isTablet ? 20 : 16),
-                  ),
-                ),
               ),
             ),
           ],
@@ -77,32 +57,80 @@ class ResponsiveHome extends StatelessWidget {
     );
   }
 
-  Widget _buildCard(int index, bool isTablet) {
-    return AspectRatio(
-      aspectRatio: 4 / 3,
-      child: Card(
-        elevation: 3,
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-        child: Padding(
-          padding: EdgeInsets.all(isTablet ? 20 : 14),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Expanded(
-                child: Icon(
-                  Icons.dashboard,
-                  size: isTablet ? 60 : 40,
-                ),
-              ),
-              const SizedBox(height: 8),
-              Flexible(
-                child: Text(
-                  "Item ${index + 1}",
-                  style: TextStyle(fontSize: isTablet ? 18 : 14),
-                ),
-              ),
-            ],
-          ),
+  Widget _buildMobileLayout(BuildContext context, double screenWidth, double screenHeight) {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        _responsivePanel(
+          width: screenWidth * 0.8,
+          height: screenHeight * 0.14,
+          color: Colors.tealAccent,
+          icon: Icons.phone_android,
+          text: 'Mobile Layout',
+        ),
+        SizedBox(height: screenHeight * 0.025),
+        _responsivePanel(
+          width: screenWidth * 0.8,
+          height: screenHeight * 0.14,
+          color: Colors.orangeAccent,
+          icon: Icons.aspect_ratio,
+          text: 'Adaptive Size: 80% width',
+        ),
+      ],
+    );
+  }
+
+  Widget _buildTabletLayout(BuildContext context, double screenWidth, double screenHeight) {
+    final double panelWidth = (screenWidth * 0.36).clamp(220, 340);
+    final double panelHeight = (screenHeight * 0.2).clamp(140, 220);
+
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+      children: [
+        _responsivePanel(
+          width: panelWidth,
+          height: panelHeight,
+          color: Colors.orangeAccent,
+          icon: Icons.tablet,
+          text: 'Tablet Left Panel',
+        ),
+        _responsivePanel(
+          width: panelWidth,
+          height: panelHeight,
+          color: Colors.tealAccent,
+          icon: Icons.dashboard_customize,
+          text: 'Tablet Right Panel',
+        ),
+      ],
+    );
+  }
+
+  Widget _responsivePanel({
+    required double width,
+    required double height,
+    required Color color,
+    required IconData icon,
+    required String text,
+  }) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        color: color,
+        borderRadius: BorderRadius.circular(16),
+      ),
+      child: Center(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon, size: height * 0.28),
+            const SizedBox(height: 8),
+            Text(
+              text,
+              style: const TextStyle(fontWeight: FontWeight.w600),
+              textAlign: TextAlign.center,
+            ),
+          ],
         ),
       ),
     );

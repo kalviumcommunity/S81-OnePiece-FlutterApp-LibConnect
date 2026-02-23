@@ -184,6 +184,20 @@ class HomeScreen extends StatelessWidget {
                         Navigator.pushNamed(context, '/state-management');
                       },
                     ),
+
+                    const SizedBox(height: 16),
+
+                    _buildDemoCard(
+                      context,
+                      title: '📱 Responsive Design',
+                      description: 'MediaQuery + LayoutBuilder for adaptive UI',
+                      color: Colors.purple,
+                      icon: Icons.devices,
+                      onTap: () {
+                        debugPrint('📍 Navigating to Responsive Design Demo');
+                        Navigator.pushNamed(context, '/responsive-design');
+                      },
+                    ),
                   ],
                 ),
               ),
