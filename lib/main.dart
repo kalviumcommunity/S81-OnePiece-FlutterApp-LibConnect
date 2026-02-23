@@ -8,6 +8,7 @@ import 'screens/dashboard.dart';
 import 'screens/simple_navigation_demo.dart';
 import 'screens/scrollable_views.dart';
 import 'screens/state_management_demo.dart';
+import 'screens/responsive_home.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +45,7 @@ class MyApp extends StatelessWidget {
         '/simple-second': (context) => const SimpleSecondScreen(),
         '/scrollable-views': (context) => const ScrollableViews(),
         '/state-management': (context) => StateManagementDemo(),
+        '/responsive-design': (context) => const ResponsiveHome(),
       },
       
       // Handle unknown routes

@@ -1114,3 +1114,39 @@ For more complex state management in larger apps, explore:
 - **Riverpod**: Modern reactive state management
 
 But master `setState()` first — it's the foundation for understanding how Flutter's reactivity works!
+
+---
+
+## Responsive Design Demo (MediaQuery + LayoutBuilder)
+
+This demo is implemented in [lib/screens/responsive_home.dart](lib/screens/responsive_home.dart) and is available from the Home Hub as **Responsive Design**.
+
+### What it demonstrates
+- **MediaQuery** for screen width, height, and orientation
+- **LayoutBuilder** for conditional widget trees based on width constraints
+- **Mobile layout** for widths under 600px (vertical `Column`)
+- **Tablet layout** for widths 600px and above (horizontal `Row`)
+- Proportional sizing (`screenWidth * ...`, `screenHeight * ...`) to avoid fixed-size UI issues
+
+### How to test responsiveness
+1. Run the app:
+  ```bash
+  flutter pub get
+  flutter run
+  ```
+2. Open **Responsive Design** from the home screen.
+3. Test on:
+  - Mobile emulator (e.g., Pixel 4)
+  - Tablet emulator (e.g., Nexus 9 / iPad)
+4. Verify:
+  - Layout switches correctly (mobile `Column` vs tablet `Row`)
+  - No overflow or distortion
+  - Panel sizes adapt proportionally to screen dimensions
+
+### Screenshots for submission
+- Mobile layout screenshot:
+  ![Responsive Mobile](assets/responsive_mobile.png)
+- Tablet layout screenshot:
+  ![Responsive Tablet](assets/responsive_tablet.png)
+
+Replace these placeholders with your captured emulator screenshots.
