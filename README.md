@@ -47,6 +47,63 @@ I learned how Flutter composes UI from widgets, how state changes trigger rebuil
 
 ---
 
+## Assets and Icons Demo
+
+This lesson adds local images and icons to the app and renders them in the responsive layout.
+
+### Asset folder structure
+```
+assets/
+  images/
+    logo.png
+    banner.jpg
+    background.png
+  icons/
+    star.png
+    profile.png
+```
+
+### pubspec.yaml snippet
+```yaml
+flutter:
+  uses-material-design: true
+  assets:
+    - assets/images/
+    - assets/icons/
+```
+
+### Code snippets
+```dart
+Image.asset(
+  'assets/images/logo.png',
+  width: 150,
+  height: 150,
+  fit: BoxFit.cover,
+)
+```
+
+```dart
+Row(
+  mainAxisAlignment: MainAxisAlignment.center,
+  children: [
+    Icon(Icons.star, color: Colors.amber, size: 32),
+    SizedBox(width: 10),
+    Text('Starred', style: TextStyle(fontSize: 18)),
+  ],
+)
+```
+
+### Screenshots
+- App screen showing images and icons: (add screenshot)
+- Asset folders and pubspec.yaml snippet: (add screenshot)
+
+### Reflection
+- Steps needed to load assets: Create folders, add files, register in `pubspec.yaml`, then run `flutter pub get`.
+- Common errors faced: Incorrect paths or YAML indentation.
+- How this supports scalability: A consistent asset structure keeps UI updates predictable and team-friendly.
+
+---
+
 ## Flutter Fundamentals — Assessment 1
 
 This section documents core Flutter architecture, the widget tree, Dart essentials, and a small reactive counter demo.

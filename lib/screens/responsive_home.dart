@@ -58,9 +58,17 @@ class ResponsiveHome extends StatelessWidget {
   }
 
   Widget _buildMobileLayout(BuildContext context, double screenWidth, double screenHeight) {
+    final double assetCardWidth = (screenWidth * 0.9).clamp(240, 420);
+    final double assetCardHeight = (screenHeight * 0.25).clamp(180, 240);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       children: [
+        _buildAssetShowcaseCard(
+          width: assetCardWidth,
+          height: assetCardHeight,
+        ),
+        SizedBox(height: screenHeight * 0.03),
         _responsivePanel(
           width: screenWidth * 0.8,
           height: screenHeight * 0.14,
@@ -83,25 +91,91 @@ class ResponsiveHome extends StatelessWidget {
   Widget _buildTabletLayout(BuildContext context, double screenWidth, double screenHeight) {
     final double panelWidth = (screenWidth * 0.36).clamp(220, 340);
     final double panelHeight = (screenHeight * 0.2).clamp(140, 220);
+    final double assetCardWidth = (screenWidth * 0.8).clamp(320, 700);
+    final double assetCardHeight = (screenHeight * 0.26).clamp(180, 260);
 
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
       children: [
-        _responsivePanel(
-          width: panelWidth,
-          height: panelHeight,
-          color: Colors.orangeAccent,
-          icon: Icons.tablet,
-          text: 'Tablet Left Panel',
+        _buildAssetShowcaseCard(
+          width: assetCardWidth,
+          height: assetCardHeight,
         ),
-        _responsivePanel(
-          width: panelWidth,
-          height: panelHeight,
-          color: Colors.tealAccent,
-          icon: Icons.dashboard_customize,
-          text: 'Tablet Right Panel',
+        SizedBox(height: screenHeight * 0.04),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+          children: [
+            _responsivePanel(
+              width: panelWidth,
+              height: panelHeight,
+              color: Colors.orangeAccent,
+              icon: Icons.tablet,
+              text: 'Tablet Left Panel',
+            ),
+            _responsivePanel(
+              width: panelWidth,
+              height: panelHeight,
+              color: Colors.tealAccent,
+              icon: Icons.dashboard_customize,
+              text: 'Tablet Right Panel',
+            ),
+          ],
         ),
       ],
+    );
+  }
+
+  Widget _buildAssetShowcaseCard({required double width, required double height}) {
+    return Container(
+      width: width,
+      height: height,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(18),
+        image: const DecorationImage(
+          image: AssetImage('assets/images/banner.jpg'),
+          fit: BoxFit.cover,
+        ),
+      ),
+      child: Container(
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(18),
+          color: Colors.black.withOpacity(0.4),
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'assets/images/logo.png',
+              width: height * 0.32,
+              height: height * 0.32,
+              fit: BoxFit.contain,
+            ),
+            const SizedBox(height: 8),
+            const Text(
+              'Assets + Icons',
+              style: TextStyle(
+                color: Colors.white,
+                fontWeight: FontWeight.w600,
+              ),
+            ),
+            const SizedBox(height: 8),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.flutter_dash, color: Colors.lightBlueAccent, size: 24),
+                const SizedBox(width: 10),
+                Image.asset(
+                  'assets/icons/star.png',
+                  width: 24,
+                  height: 24,
+                ),
+                const SizedBox(width: 10),
+                const Icon(Icons.android, color: Colors.greenAccent, size: 24),
+              ],
+            ),
+          ],
+        ),
+      ),
     );
   }
 
