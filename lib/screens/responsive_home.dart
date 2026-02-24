@@ -1,7 +1,22 @@
 import 'package:flutter/material.dart';
 
-class ResponsiveHome extends StatelessWidget {
+import 'animation_demo.dart';
+
+class ResponsiveHome extends StatefulWidget {
   const ResponsiveHome({super.key});
+
+  @override
+  State<ResponsiveHome> createState() => _ResponsiveHomeState();
+}
+
+class _ResponsiveHomeState extends State<ResponsiveHome> {
+  bool _animationsOn = false;
+
+  void _toggleAnimations() {
+    setState(() {
+      _animationsOn = !_animationsOn;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,6 +55,26 @@ class ResponsiveHome extends StatelessWidget {
               textAlign: TextAlign.center,
             ),
             SizedBox(height: sectionSpacing),
+            Wrap(
+              spacing: 12,
+              runSpacing: 8,
+              alignment: WrapAlignment.center,
+              children: [
+                ElevatedButton.icon(
+                  onPressed: _toggleAnimations,
+                  icon: Icon(_animationsOn ? Icons.pause_circle : Icons.play_circle),
+                  label: Text(_animationsOn ? 'Pause Animations' : 'Play Animations'),
+                ),
+                OutlinedButton.icon(
+                  onPressed: () {
+                    Navigator.of(context).push(_buildSlideRoute(const AnimationDemoScreen()));
+                  },
+                  icon: const Icon(Icons.motion_photos_on),
+                  label: const Text('Explicit Demo'),
+                ),
+              ],
+            ),
+            SizedBox(height: sectionSpacing),
             Expanded(
               child: LayoutBuilder(
                 builder: (context, constraints) {
@@ -67,6 +102,7 @@ class ResponsiveHome extends StatelessWidget {
         _buildAssetShowcaseCard(
           width: assetCardWidth,
           height: assetCardHeight,
+          animate: _animationsOn,
         ),
         SizedBox(height: screenHeight * 0.03),
         _responsivePanel(
@@ -75,6 +111,7 @@ class ResponsiveHome extends StatelessWidget {
           color: Colors.tealAccent,
           icon: Icons.phone_android,
           text: 'Mobile Layout',
+          isEmphasized: _animationsOn,
         ),
         SizedBox(height: screenHeight * 0.025),
         _responsivePanel(
@@ -83,6 +120,7 @@ class ResponsiveHome extends StatelessWidget {
           color: Colors.orangeAccent,
           icon: Icons.aspect_ratio,
           text: 'Adaptive Size: 80% width',
+          isEmphasized: _animationsOn,
         ),
       ],
     );
@@ -100,6 +138,7 @@ class ResponsiveHome extends StatelessWidget {
         _buildAssetShowcaseCard(
           width: assetCardWidth,
           height: assetCardHeight,
+          animate: _animationsOn,
         ),
         SizedBox(height: screenHeight * 0.04),
         Row(
@@ -111,6 +150,7 @@ class ResponsiveHome extends StatelessWidget {
               color: Colors.orangeAccent,
               icon: Icons.tablet,
               text: 'Tablet Left Panel',
+              isEmphasized: _animationsOn,
             ),
             _responsivePanel(
               width: panelWidth,
@@ -118,6 +158,7 @@ class ResponsiveHome extends StatelessWidget {
               color: Colors.tealAccent,
               icon: Icons.dashboard_customize,
               text: 'Tablet Right Panel',
+              isEmphasized: _animationsOn,
             ),
           ],
         ),
@@ -125,30 +166,48 @@ class ResponsiveHome extends StatelessWidget {
     );
   }
 
-  Widget _buildAssetShowcaseCard({required double width, required double height}) {
-    return Container(
+  Widget _buildAssetShowcaseCard({required double width, required double height, required bool animate}) {
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 600),
+      curve: Curves.easeInOut,
       width: width,
       height: height,
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(animate ? 28 : 18),
         image: const DecorationImage(
           image: AssetImage('assets/images/banner.jpg'),
           fit: BoxFit.cover,
         ),
+        boxShadow: animate
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.25),
+                  blurRadius: 18,
+                  offset: const Offset(0, 10),
+                ),
+              ]
+            : [],
       ),
-      child: Container(
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 600),
+        curve: Curves.easeInOut,
         decoration: BoxDecoration(
-          borderRadius: BorderRadius.circular(18),
-          color: Colors.black.withOpacity(0.4),
+          borderRadius: BorderRadius.circular(animate ? 28 : 18),
+          color: Colors.black.withOpacity(animate ? 0.25 : 0.4),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(
-              'assets/images/logo.png',
-              width: height * 0.32,
-              height: height * 0.32,
-              fit: BoxFit.contain,
+            AnimatedOpacity(
+              duration: const Duration(milliseconds: 500),
+              curve: Curves.easeInOut,
+              opacity: animate ? 1.0 : 0.6,
+              child: Image.asset(
+                'assets/images/logo.png',
+                width: height * 0.32,
+                height: height * 0.32,
+                fit: BoxFit.contain,
+              ),
             ),
             const SizedBox(height: 8),
             const Text(
@@ -185,19 +244,33 @@ class ResponsiveHome extends StatelessWidget {
     required Color color,
     required IconData icon,
     required String text,
+    required bool isEmphasized,
   }) {
-    return Container(
+    final double iconScale = isEmphasized ? 0.32 : 0.28;
+
+    return AnimatedContainer(
+      duration: const Duration(milliseconds: 500),
+      curve: Curves.easeInOut,
       width: width,
       height: height,
       decoration: BoxDecoration(
-        color: color,
-        borderRadius: BorderRadius.circular(16),
+        color: isEmphasized ? color.withOpacity(0.9) : color,
+        borderRadius: BorderRadius.circular(isEmphasized ? 24 : 16),
+        boxShadow: isEmphasized
+            ? [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.18),
+                  blurRadius: 14,
+                  offset: const Offset(0, 8),
+                ),
+              ]
+            : [],
       ),
       child: Center(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon, size: height * 0.28),
+            Icon(icon, size: height * iconScale),
             const SizedBox(height: 8),
             Text(
               text,
@@ -207,6 +280,27 @@ class ResponsiveHome extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Route<void> _buildSlideRoute(Widget page) {
+    return PageRouteBuilder<void>(
+      transitionDuration: const Duration(milliseconds: 700),
+      pageBuilder: (context, animation, secondaryAnimation) => page,
+      transitionsBuilder: (context, animation, secondaryAnimation, child) {
+        final curvedAnimation = CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeInOut,
+        );
+
+        return SlideTransition(
+          position: Tween<Offset>(
+            begin: const Offset(1.0, 0.0),
+            end: Offset.zero,
+          ).animate(curvedAnimation),
+          child: child,
+        );
+      },
     );
   }
 }
