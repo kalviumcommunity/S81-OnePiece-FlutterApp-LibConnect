@@ -104,6 +104,60 @@ Row(
 
 ---
 
+## Animations and Transitions Demo
+
+This lesson adds implicit animations, an explicit rotation animation, and a custom page transition.
+
+### Code snippets
+```dart
+AnimatedContainer(
+  duration: const Duration(milliseconds: 600),
+  curve: Curves.easeInOut,
+  width: width,
+  height: height,
+)
+```
+
+```dart
+AnimatedOpacity(
+  duration: const Duration(milliseconds: 500),
+  opacity: isVisible ? 1.0 : 0.6,
+  child: Image.asset('assets/images/logo.png'),
+)
+```
+
+```dart
+Navigator.of(context).push(
+  PageRouteBuilder(
+    transitionDuration: const Duration(milliseconds: 700),
+    pageBuilder: (context, animation, secondaryAnimation) => const AnimationDemoScreen(),
+    transitionsBuilder: (context, animation, secondaryAnimation, child) {
+      return SlideTransition(
+        position: Tween<Offset>(
+          begin: const Offset(1.0, 0.0),
+          end: Offset.zero,
+        ).animate(CurvedAnimation(
+          parent: animation,
+          curve: Curves.easeInOut,
+        )),
+        child: child,
+      );
+    },
+  ),
+);
+```
+
+### Screenshots or GIFs
+- Implicit animation toggle on the responsive screen: (add screenshot)
+- Explicit rotation demo screen: (add screenshot or GIF)
+
+### Reflection
+- Why animations matter for UX: They guide attention and make interactions feel responsive.
+- Implicit vs explicit: Implicit animations react to property changes; explicit animations are driven by controllers.
+- Team usage: Apply consistent timing/curves to keep motion cohesive across screens.
+
+---
+
 ## Flutter Fundamentals — Assessment 1
 
 This section documents core Flutter architecture, the widget tree, Dart essentials, and a small reactive counter demo.
