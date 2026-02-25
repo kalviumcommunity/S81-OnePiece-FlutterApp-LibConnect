@@ -1,8 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 
 class FirestoreService {
-  final CollectionReference tasks =
-      FirebaseFirestore.instance.collection('tasks');
+  final _db = FirebaseFirestore.instance;
+
+  // ── Tasks ──────────────────────────────────────────────
+  CollectionReference get tasks => _db.collection('tasks');
 
   Future<DocumentReference> addTask(String title) {
     return tasks.add({'title': title, 'createdAt': Timestamp.now()});
@@ -11,12 +13,8 @@ class FirestoreService {
   Stream<QuerySnapshot> getTasks() {
     return tasks.orderBy('createdAt', descending: true).snapshots();
   }
-}
-import 'package:cloud_firestore/cloud_firestore.dart';
 
-class FirestoreService {
-  final _db = FirebaseFirestore.instance;
-
+  // ── Notes ──────────────────────────────────────────────
   Future<void> addNote(String text) async {
     await _db.collection('notes').add({
       'text': text,
