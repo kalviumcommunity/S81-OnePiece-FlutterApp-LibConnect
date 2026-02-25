@@ -1261,3 +1261,249 @@ This demo is implemented in [lib/screens/responsive_home.dart](lib/screens/respo
   ![Responsive Tablet](assets/responsive_tablet.png)
 
 Replace these placeholders with your captured emulator screenshots.
+
+---
+
+## 🔥 Setting Up Firebase Project and Connecting It to Flutter App
+
+This section documents the complete process of creating a Firebase project, linking it to the LibConnect Flutter app, and verifying a successful integration. Firebase serves as the backend for the app — enabling authentication, real-time databases, cloud storage, and analytics.
+
+### What is Firebase?
+
+Firebase is a cloud platform by Google that provides tools for building, improving, and scaling mobile and web apps. Key services used in LibConnect:
+
+| Service | Purpose |
+|---------|---------|
+| **Authentication** | Secure user login using email, Google, etc. |
+| **Firestore Database** | Store and sync data in real-time (NoSQL) |
+| **Cloud Storage** | Manage media files and documents |
+| **Analytics** | Track usage and user behavior |
+
+### Step 1: Create a Firebase Project
+
+1. Go to [Firebase Console](https://console.firebase.google.com/).
+2. Click **"Add Project"** → Enter project name (e.g., `libconnect-app`).
+3. Enable **Google Analytics** (optional but recommended).
+4. Wait for Firebase to initialize, then proceed to the dashboard.
+
+### Step 2: Register the Flutter App with Firebase
+
+#### Add the Android App
+1. In the Firebase project dashboard, click **Add App → Android**.
+2. Enter the Android package name (found in `android/app/build.gradle` → `applicationId`):
+   ```
+   com.example.s81_onepiece_flutterapp_libconnect
+   ```
+3. Add an optional nickname (e.g., "LibConnect Flutter App") and click **Register App**.
+
+#### Download the Configuration File
+1. Download the `google-services.json` file provided by Firebase.
+2. Move it into the Flutter project:
+   ```
+   android/app/google-services.json
+   ```
+
+### Step 3: Add Firebase SDK Dependencies
+
+In `pubspec.yaml`, add the Firebase packages:
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+
+  # Firebase dependencies
+  firebase_core: ^3.0.0
+  cloud_firestore: ^5.0.0
+  firebase_auth: ^5.0.0
+  firebase_storage: ^11.0.0
+```
+
+Then run:
+```bash
+flutter pub get
+```
+
+### Step 4: Configure Android Build Files
+
+#### Project-level `android/build.gradle`
+Add the Google Services classpath:
+```gradle
+buildscript {
+    dependencies {
+        classpath 'com.google.gms:google-services:4.4.0'
+    }
+}
+```
+
+#### App-level `android/app/build.gradle`
+Add the Google Services plugin at the bottom:
+```gradle
+apply plugin: 'com.google.gms.google-services'
+```
+
+### Step 5: Initialize Firebase in Flutter
+
+Edit `lib/main.dart` to initialize Firebase before running the app:
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp();
+  debugPrint('🚀 App launched successfully!');
+  runApp(const MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Flutter Widget Demo',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        useMaterial3: true,
+      ),
+      debugShowCheckedModeBanner: false,
+      home: const HomeScreen(),
+    );
+  }
+}
+```
+
+Key points:
+- `WidgetsFlutterBinding.ensureInitialized()` — Required before any async work in `main()`.
+- `await Firebase.initializeApp()` — Connects the app to the Firebase project using the config file.
+- `async` on `main()` — Necessary because Firebase initialization is asynchronous.
+
+### Step 6: Firebase Service Classes
+
+#### Authentication Service (`lib/services/auth_service.dart`)
+```dart
+import 'package:firebase_auth/firebase_auth.dart';
+
+class AuthService {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
+
+  Future<UserCredential> signUp(String email, String password) async {
+    return await _auth.createUserWithEmailAndPassword(
+      email: email, password: password,
+    );
+  }
+
+  Future<UserCredential> signIn(String email, String password) async {
+    return await _auth.signInWithEmailAndPassword(
+      email: email, password: password,
+    );
+  }
+
+  Future<void> signOut() async {
+    await _auth.signOut();
+  }
+
+  User? get currentUser => _auth.currentUser;
+}
+```
+
+#### Firestore Service (`lib/services/firestore_service.dart`)
+```dart
+import 'package:cloud_firestore/cloud_firestore.dart';
+
+class FirestoreService {
+  final _db = FirebaseFirestore.instance;
+
+  // Tasks CRUD
+  Future<DocumentReference> addTask(String title) {
+    return _db.collection('tasks').add({
+      'title': title,
+      'createdAt': Timestamp.now(),
+    });
+  }
+
+  Stream<QuerySnapshot> getTasks() {
+    return _db.collection('tasks')
+        .orderBy('createdAt', descending: true)
+        .snapshots();
+  }
+
+  // Notes CRUD
+  Future<void> addNote(String text) async {
+    await _db.collection('notes').add({
+      'text': text,
+      'createdAt': Timestamp.now(),
+    });
+  }
+
+  Stream<QuerySnapshot> getNotes() {
+    return _db.collection('notes').snapshots();
+  }
+
+  Future<void> updateNote(String id, String text) async {
+    await _db.collection('notes').doc(id).update({'text': text});
+  }
+
+  Future<void> deleteNote(String id) async {
+    await _db.collection('notes').doc(id).delete();
+  }
+}
+```
+
+### Step 7: Verify Firebase Connection
+
+1. Run the app:
+   ```bash
+   flutter run
+   ```
+2. Open [Firebase Console](https://console.firebase.google.com/) → **Project Settings → Your Apps**.
+3. If connected successfully, the Flutter app appears as an active app and terminal shows:
+   ```
+   🚀 App launched successfully!
+   ```
+
+### Folder Structure for Firebase Config
+
+```
+project-root/
+├── android/
+│   └── app/
+│       ├── build.gradle          ← apply plugin line here
+│       └── google-services.json  ← Firebase config file here
+├── lib/
+│   ├── main.dart                 ← Firebase.initializeApp() here
+│   └── services/
+│       ├── auth_service.dart     ← Firebase Auth wrapper
+│       └── firestore_service.dart ← Firestore CRUD operations
+└── pubspec.yaml                  ← Firebase dependencies here
+```
+
+### Common Issues & Fixes
+
+| Problem | Possible Cause | Solution |
+|---------|----------------|----------|
+| `google-services.json` not found | File placed in wrong folder | Move to `android/app/` |
+| Plugin not applied | Missing Gradle plugin line | Add `apply plugin: 'com.google.gms.google-services'` in `android/app/build.gradle` |
+| Firebase not initialized | Missing `await Firebase.initializeApp()` | Add it in `main()` before `runApp()` |
+| App build fails | Version mismatch | Update Gradle and Firebase dependencies |
+| App crash on startup | Wrong package name | Ensure Firebase package name matches app's `applicationId` |
+
+### Screenshots
+
+- Firebase Console showing connected app: *(add screenshot)*
+- App running with Firebase initialized: *(add screenshot)*
+
+### Reflection
+
+**Why is Firebase a popular choice for mobile backends?**
+Firebase is popular because it provides a comprehensive suite of backend services (auth, database, storage, analytics) that are tightly integrated with each other and with Google Cloud. It eliminates the need to build and maintain a separate server, offers real-time data synchronization out of the box, and has generous free tiers. Its Flutter SDK (FlutterFire) provides native Dart packages that integrate seamlessly with the Flutter framework.
+
+**What was the most challenging step in setup?**
+The most important and error-prone step was configuring the Android build files (`build.gradle`) and placing `google-services.json` in the correct directory. A misplaced config file or missing Gradle plugin line causes the entire build to fail with unclear error messages. It's critical to follow the exact folder structure and plugin configuration.
+
+**How does this integration prepare the app for authentication and storage features?**
+With `firebase_core` initialized, the app can now use any Firebase service. The `AuthService` class wraps Firebase Auth for user sign-up, sign-in, and sign-out. The `FirestoreService` class provides CRUD operations for real-time data. Adding new Firebase features (like Cloud Storage or Cloud Messaging) only requires importing the relevant package — the core connection is already established.
+
