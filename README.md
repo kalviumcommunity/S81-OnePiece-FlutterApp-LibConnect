@@ -1507,3 +1507,193 @@ The most important and error-prone step was configuring the Android build files 
 **How does this integration prepare the app for authentication and storage features?**
 With `firebase_core` initialized, the app can now use any Firebase service. The `AuthService` class wraps Firebase Auth for user sign-up, sign-in, and sign-out. The `FirestoreService` class provides CRUD operations for real-time data. Adding new Firebase features (like Cloud Storage or Cloud Messaging) only requires importing the relevant package — the core connection is already established.
 
+---
+
+## 🔧 Integrating Firebase SDKs Using FlutterFire CLI and Packages
+
+This section documents the integration of Firebase SDKs into the LibConnect Flutter app using the **FlutterFire CLI** — the official tool that automates Firebase configuration across Android, iOS, and Web platforms.
+
+### What is FlutterFire CLI?
+
+The FlutterFire CLI is a command-line tool that simplifies connecting a Flutter project to Firebase. It:
+
+- Registers your app on all target platforms automatically
+- Generates `lib/firebase_options.dart` containing all Firebase credentials
+- Eliminates manual editing of `google-services.json` or Gradle files
+- Keeps Firebase SDK versions consistent across environments
+
+### Step 1: Install Prerequisites
+
+#### Install Firebase Tools
+```bash
+npm install -g firebase-tools
+```
+
+#### Install FlutterFire CLI
+```bash
+dart pub global activate flutterfire_cli
+```
+
+#### Verify Installation
+```bash
+flutterfire --version
+```
+Expected output: `FlutterFire CLI v0.2.7` (or later)
+
+### Step 2: Login to Firebase
+```bash
+firebase login
+```
+A browser window opens — log in with the same Google account used for the Firebase project.
+
+### Step 3: Configure the Flutter Project
+
+Run inside the Flutter project directory:
+```bash
+flutterfire configure
+```
+
+The CLI will:
+1. Detect all your Firebase projects
+2. Ask you to select one (choose `libconnect-app`)
+3. Ask which platforms to configure (Android, iOS, Web)
+4. Auto-generate `lib/firebase_options.dart`
+
+### Step 4: Add Firebase Core Dependency
+
+In `pubspec.yaml`:
+```yaml
+dependencies:
+  firebase_core: ^3.0.0
+```
+
+Then install:
+```bash
+flutter pub get
+```
+
+### Step 5: Initialize Firebase with Generated Config
+
+In `lib/main.dart`:
+```dart
+import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'firebase_options.dart';
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  runApp(MyApp());
+}
+```
+
+**Key differences from manual setup:**
+- `firebase_options.dart` replaces manual `google-services.json` configuration
+- `DefaultFirebaseOptions.currentPlatform` auto-selects the correct platform config
+- No need to manually edit Android Gradle files
+
+### Step 6: Generated `firebase_options.dart` Structure
+
+The CLI generates a file like this:
+```dart
+class DefaultFirebaseOptions {
+  static FirebaseOptions get currentPlatform {
+    if (kIsWeb) return web;
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.android:
+        return android;
+      case TargetPlatform.iOS:
+        return ios;
+      case TargetPlatform.macOS:
+        return macos;
+      default:
+        throw UnsupportedError('Platform not configured');
+    }
+  }
+
+  static const FirebaseOptions android = FirebaseOptions(
+    apiKey: 'YOUR_ANDROID_API_KEY',
+    appId: '1:000000000000:android:...',
+    messagingSenderId: '000000000000',
+    projectId: 'libconnect-app',
+    storageBucket: 'libconnect-app.appspot.com',
+  );
+
+  // Similar entries for web, iOS, macOS...
+}
+```
+
+### Step 7: Add Additional Firebase SDKs
+
+With the CLI config in place, adding new services only requires a `pubspec.yaml` entry:
+
+```yaml
+dependencies:
+  firebase_core: ^3.0.0
+  cloud_firestore: ^5.0.0
+  firebase_auth: ^5.0.0
+  firebase_storage: ^11.0.0
+  firebase_analytics: ^11.0.0
+```
+
+Then run:
+```bash
+flutter pub get
+```
+
+Each package automatically uses the credentials from `firebase_options.dart`.
+
+### Step 8: Verify Integration
+
+Run the app:
+```bash
+flutter run
+```
+
+Verify:
+- App runs without Firebase errors
+- Terminal shows: `Firebase initialized with DefaultFirebaseOptions`
+- Firebase Console → **Project Settings → Your Apps** shows the registered app
+
+### Common Issues & Fixes
+
+| Issue | Cause | Fix |
+|-------|-------|-----|
+| `flutterfire` not recognized | CLI not in PATH | Add `~/.pub-cache/bin` to your system PATH |
+| Firebase not initialized | Missing `await Firebase.initializeApp()` | Add initialization before `runApp()` |
+| Build fails on Android | Missing Gradle plugin | Add `apply plugin: 'com.google.gms.google-services'` |
+| Wrong Firebase project | Incorrect project selected during configure | Re-run `flutterfire configure` and select the correct project |
+| Platform not configured | Missing platform in `firebase_options.dart` | Re-run `flutterfire configure` and select all target platforms |
+
+### Folder Structure After CLI Setup
+
+```
+project-root/
+├── lib/
+│   ├── main.dart                 ← Firebase.initializeApp(options: ...)
+│   ├── firebase_options.dart     ← Auto-generated by FlutterFire CLI
+│   └── services/
+│       ├── auth_service.dart     ← Firebase Auth wrapper
+│       └── firestore_service.dart ← Firestore CRUD operations
+└── pubspec.yaml                  ← Firebase dependencies
+```
+
+### Screenshots
+
+- Terminal showing `flutterfire configure` output: *(add screenshot)*
+- Generated `firebase_options.dart` in VS Code: *(add screenshot)*
+- App running with Firebase connected: *(add screenshot)*
+- Firebase Console showing registered app: *(add screenshot)*
+
+### Reflection
+
+**How did FlutterFire CLI simplify Firebase integration?**
+FlutterFire CLI eliminated the need to manually download `google-services.json`, edit Gradle files, or configure platform-specific settings. A single `flutterfire configure` command handled everything — registering the app on all platforms, generating credentials, and creating the `firebase_options.dart` file. This reduces setup time from 30+ minutes of error-prone manual work to under 2 minutes.
+
+**What errors did you face and how did you resolve them?**
+The most common issue was the CLI not being recognized after installation. This was resolved by ensuring `~/.pub-cache/bin` was added to the system PATH. Another issue was selecting the wrong Firebase project during configuration, which was fixed by re-running `flutterfire configure`.
+
+**Why is CLI-based setup preferred over manual configuration?**
+CLI-based setup is preferred because it: (1) eliminates human error in copying API keys and editing config files, (2) supports all platforms in a single command, (3) keeps configurations version-aligned, and (4) makes it easy to reconfigure when switching Firebase projects or adding new platforms. For team projects, it ensures every developer has consistent Firebase configuration.
