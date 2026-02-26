@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
@@ -25,20 +26,27 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    debugPrint('🏗️ Building MyApp widget');
     return MaterialApp(
-      title: 'Flutter Widget Demo',
+      title: 'Auth Flow Demo',
       theme: ThemeData(
         primarySwatch: Colors.blue,
         useMaterial3: true,
       ),
       debugShowCheckedModeBanner: false,
 
-      home: const AuthGate(),
+      home: StreamBuilder<User?>(
+        stream: FirebaseAuth.instance.authStateChanges(),
+        builder: (ctx, snapshot) {
+          if (snapshot.hasData) {
+            return const HomeScreen();
+          }
+          return const AuthScreen();
+        },
+      ),
 
       // Define all named routes
       routes: {
-        '/': (context) => const HomeScreen(),
+        '/': (context) => const AuthScreen(),
         '/hot-reload': (context) => const HotReloadDemo(),
         '/stateless-stateful': (context) => const StatelessStatefulDemo(),
         '/login': (context) => const AuthScreen(),
