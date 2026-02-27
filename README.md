@@ -1697,3 +1697,250 @@ The most common issue was the CLI not being recognized after installation. This 
 
 **Why is CLI-based setup preferred over manual configuration?**
 CLI-based setup is preferred because it: (1) eliminates human error in copying API keys and editing config files, (2) supports all platforms in a single command, (3) keeps configurations version-aligned, and (4) makes it easy to reconfigure when switching Firebase projects or adding new platforms. For team projects, it ensures every developer has consistent Firebase configuration.
+
+---
+
+## Firestore Data Model Design (LibConnect)
+
+### 1) How Firestore Stores Data
+Firestore is a NoSQL, document-oriented database organized as:
+- **Collections**: top-level containers
+- **Documents**: key-value records inside collections
+- **Subcollections**: nested collections under a document for scalable one-to-many data
+
+General pattern:
+```
+users (collection)
+ └── userId (document)
+       ├── name: "Asha"
+       ├── email: "asha@example.com"
+       └── reservations (subcollection)
+             └── reservationId (document)
+```
+
+### 2) Data Requirements List
+LibConnect needs to store:
+- Users (reader + librarian roles)
+- User profiles
+- Books (catalog + availability)
+- Reservations (hold requests)
+- Borrow records (issued/returned books)
+- Favorites (saved books)
+- App notes/tasks demo data (existing learning modules)
+
+### 3) Firestore Schema (Core)
+
+#### A. `users` (collection)
+Document ID: `uid` (Firebase Auth UID)
+
+Fields:
+- `fullName`: string
+- `email`: string
+- `role`: string (`reader` | `librarian`)
+- `phoneNumber`: string?
+- `createdAt`: timestamp
+- `updatedAt`: timestamp
+
+Sample:
+```json
+{
+  "fullName": "Asha Nair",
+  "email": "asha@example.com",
+  "role": "reader",
+  "phoneNumber": "+91-9876543210",
+  "createdAt": "serverTimestamp",
+  "updatedAt": "serverTimestamp"
+}
+```
+
+Subcollections under `users/{uid}`:
+
+1) `favorites`
+- Document ID: `bookId` (same as book doc for quick lookup)
+- Fields:
+  - `bookId`: string
+  - `addedAt`: timestamp
+
+2) `notifications` (optional but scalable)
+- Document ID: auto ID
+- Fields:
+  - `type`: string (`reservationApproved`, `dueReminder`, etc.)
+  - `message`: string
+  - `isRead`: bool
+  - `createdAt`: timestamp
+
+#### B. `books` (collection)
+Document ID: auto ID or ISBN-based custom ID (if guaranteed unique)
+
+Fields:
+- `title`: string
+- `author`: string
+- `isbn`: string
+- `genre`: string
+- `totalCopies`: number
+- `availableCopies`: number
+- `shelfLocation`: string
+- `coverImageUrl`: string?
+- `keywords`: array<string>
+- `createdAt`: timestamp
+- `updatedAt`: timestamp
+
+Sample:
+```json
+{
+  "title": "The Alchemist",
+  "author": "Paulo Coelho",
+  "isbn": "9780061122415",
+  "genre": "Fiction",
+  "totalCopies": 8,
+  "availableCopies": 3,
+  "shelfLocation": "A-12",
+  "coverImageUrl": "https://...",
+  "keywords": ["fiction", "inspiration"],
+  "createdAt": "serverTimestamp",
+  "updatedAt": "serverTimestamp"
+}
+```
+
+Subcollection under `books/{bookId}`:
+
+`reviews` (if enabled later)
+- Document ID: auto ID
+- Fields:
+  - `userId`: string
+  - `rating`: number
+  - `comment`: string
+  - `createdAt`: timestamp
+
+#### C. `reservations` (collection)
+Document ID: auto ID
+
+Fields:
+- `userId`: string (reference key)
+- `bookId`: string (reference key)
+- `status`: string (`pending` | `approved` | `cancelled` | `fulfilled`)
+- `reservedAt`: timestamp
+- `expiresAt`: timestamp
+- `updatedAt`: timestamp
+
+Sample:
+```json
+{
+  "userId": "uid_123",
+  "bookId": "book_456",
+  "status": "pending",
+  "reservedAt": "serverTimestamp",
+  "expiresAt": "2026-03-05T10:00:00Z",
+  "updatedAt": "serverTimestamp"
+}
+```
+
+#### D. `borrowRecords` (collection)
+Document ID: auto ID
+
+Fields:
+- `userId`: string
+- `bookId`: string
+- `issuedAt`: timestamp
+- `dueAt`: timestamp
+- `returnedAt`: timestamp?
+- `fineAmount`: number
+- `status`: string (`issued` | `returned` | `overdue`)
+- `createdAt`: timestamp
+- `updatedAt`: timestamp
+
+Sample:
+```json
+{
+  "userId": "uid_123",
+  "bookId": "book_456",
+  "issuedAt": "2026-02-20T09:00:00Z",
+  "dueAt": "2026-03-06T09:00:00Z",
+  "returnedAt": null,
+  "fineAmount": 0,
+  "status": "issued",
+  "createdAt": "serverTimestamp",
+  "updatedAt": "serverTimestamp"
+}
+```
+
+#### E. Existing demo collections in current code
+From `lib/services/firestore_service.dart`:
+
+1) `tasks`
+- `title`: string
+- `createdAt`: timestamp
+
+2) `notes`
+- `text`: string
+- `createdAt`: timestamp
+
+### 4) When to Use Subcollections
+Use subcollections in this app when:
+- Child data can grow large per parent (`users/{uid}/notifications`)
+- Data naturally belongs to a parent (`users/{uid}/favorites`)
+- You need focused real-time listeners without loading full parent documents
+
+Avoid storing large, frequently updated arrays (for example a huge `favoriteBookIds` array) in a single document.
+
+### 5) Field Design Guidelines (Applied)
+- Field naming uses `lowerCamelCase`
+- Types are explicit: `string`, `number`, `bool`, `array`, `timestamp`
+- Keep nested maps shallow for easier queries and maintenance
+- Include lifecycle timestamps in all mutable docs:
+  - `createdAt: FieldValue.serverTimestamp()`
+  - `updatedAt: FieldValue.serverTimestamp()`
+- Document IDs:
+  - Use auto IDs for transactions (`reservations`, `borrowRecords`)
+  - Use meaningful IDs where useful (`users/{uid}`, `favorites/{bookId}`)
+
+### 6) Visual Schema Diagram (Mermaid)
+```mermaid
+flowchart TD
+  U[users]
+  UDOC[(users/{uid})]
+  UFAV[users/{uid}/favorites]
+  UFAVDOC[(favorites/{bookId})\nbookId:string\naddedAt:timestamp]
+  UNOTI[users/{uid}/notifications]
+  UNOTIDOC[(notifications/{notificationId})\ntype:string\nmessage:string\nisRead:bool\ncreatedAt:timestamp]
+
+  B[books]
+  BDOC[(books/{bookId})\ntitle:string\nauthor:string\nisbn:string\ngenre:string\ntotalCopies:number\navailableCopies:number\ncreatedAt:timestamp\nupdatedAt:timestamp]
+  BREV[books/{bookId}/reviews]
+  BREVDOC[(reviews/{reviewId})\nuserId:string\nrating:number\ncomment:string\ncreatedAt:timestamp]
+
+  R[reservations]
+  RDOC[(reservations/{reservationId})\nuserId:string\nbookId:string\nstatus:string\nreservedAt:timestamp\nexpiresAt:timestamp\nupdatedAt:timestamp]
+
+  BR[borrowRecords]
+  BRDOC[(borrowRecords/{recordId})\nuserId:string\nbookId:string\nissuedAt:timestamp\ndueAt:timestamp\nreturnedAt:timestamp?\nfineAmount:number\nstatus:string\ncreatedAt:timestamp\nupdatedAt:timestamp]
+
+  T[tasks]
+  TDOC[(tasks/{taskId})\ntitle:string\ncreatedAt:timestamp]
+  N[notes]
+  NDOC[(notes/{noteId})\ntext:string\ncreatedAt:timestamp]
+
+  U --> UDOC
+  UDOC --> UFAV --> UFAVDOC
+  UDOC --> UNOTI --> UNOTIDOC
+  B --> BDOC
+  BDOC --> BREV --> BREVDOC
+  R --> RDOC
+  BR --> BRDOC
+  T --> TDOC
+  N --> NDOC
+
+  RDOC -. references .-> UDOC
+  RDOC -. references .-> BDOC
+  BRDOC -. references .-> UDOC
+  BRDOC -. references .-> BDOC
+```
+
+### 7) Schema Validation Checklist
+- [x] Structure matches current and planned app requirements
+- [x] Scales for large user/book transaction volumes
+- [x] Related data grouped logically by feature/domain
+- [x] Subcollections used where high growth is expected
+- [x] Field names/types are consistent and query-friendly
+- [x] Schema is understandable for new team members
+
