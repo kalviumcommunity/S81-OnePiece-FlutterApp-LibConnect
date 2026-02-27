@@ -37,6 +37,10 @@ class MyApp extends StatelessWidget {
       home: StreamBuilder<User?>(
         stream: FirebaseAuth.instance.authStateChanges(),
         builder: (ctx, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return const SplashScreen();
+          }
+
           if (snapshot.hasData) {
             return const HomeScreen();
           }
@@ -65,6 +69,19 @@ class MyApp extends StatelessWidget {
           builder: (context) => const HomeScreen(),
         );
       },
+    );
+  }
+}
+
+class SplashScreen extends StatelessWidget {
+  const SplashScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return const Scaffold(
+      body: Center(
+        child: CircularProgressIndicator(),
+      ),
     );
   }
 }
