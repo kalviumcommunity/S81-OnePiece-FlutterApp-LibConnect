@@ -10,7 +10,86 @@ Our team of three members is developing LibConnect, a Flutter and Firebase-based
 LibConnect is a Flutter and Firebase-based mobile app concept to modernize public library management with real-time book discovery, reservations, and user tracking.
 
 ### Folder structure and purpose
+---
+
+## Sprint 2 - Firestore Write & Update Operations
+
+### Project title
+Firestore Write & Update Operations for LibConnect Task Management
+
+### What this lesson writes to Firestore
+The app writes task data to the `tasks` collection with:
+- `add` for creating new task documents with auto IDs
+- `set` with merge for safe partial writes (`taskId` field)
+- `update` for modifying existing fields (title and description)
+
+### Add vs Set vs Update
+- **Add**: creates a new document with an auto-generated ID.
+- **Set**: writes to a specific document ID; with `SetOptions(merge: true)` it updates only supplied fields.
+- **Update**: changes specific fields in an existing document without overwriting the full document.
+
+### Input form snippet
+```dart
+TextField(
+  controller: _titleController,
+  decoration: const InputDecoration(labelText: 'Title'),
+),
+TextField(
+  controller: _descriptionController,
+  decoration: const InputDecoration(labelText: 'Description'),
+),
+ElevatedButton(
+  onPressed: _addTask,
+  child: const Text('Add Task'),
+)
 ```
+
+### Add operation snippet
+```dart
+final createdDoc = await firestore.addTask(
+  title: title,
+  description: description,
+);
+
+await firestore.setTaskById(
+  taskId: createdDoc.id,
+  data: {'taskId': createdDoc.id},
+  merge: true,
+);
+```
+
+### Update operation snippet
+```dart
+await firestore.updateTask(
+  taskId: taskId,
+  title: title,
+  description: description,
+);
+```
+
+### Screenshots
+- App UI add/update form: add screenshot at `assets/screenshots/firestore-write-ui.png`
+- Firestore console with created/updated docs: add screenshot at `assets/screenshots/firestore-write-console.png`
+
+### Reflection
+- **Why secure writes matter:** They reduce accidental overwrites, protect schema consistency, and keep production data reliable.
+- **Difference between add, set, update:** `add` creates new docs, `set` targets a known doc ID (merge optional), `update` modifies selected fields only.
+- **How validation prevents corruption:** Checking empty fields and expected types before writes prevents incomplete or malformed records.
+
+### Submission guidelines
+- Commit message: `feat: implemented add and update operations for Firestore data`
+- PR title: `[Sprint-2] Firestore Write & Update Operations – TeamName`
+- PR description includes:
+  - What data your app writes (`tasks` title/description/status/timestamps)
+  - Code snippets for input, add, and update operations
+  - Screenshots from app and Firestore console
+  - Reflection
+- 1–2 minute video demo should show:
+  - Adding task data from app
+  - New record appearing in Firestore console
+  - Updating task data from app
+  - Updated record in Firestore console
+  - UI reflecting changes in real time
 lib/
   main.dart           # App entry point and initial routing
   screens/            # Individual UI screens

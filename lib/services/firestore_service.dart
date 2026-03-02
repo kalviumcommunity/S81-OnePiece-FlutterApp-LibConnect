@@ -9,8 +9,56 @@ class FirestoreService {
   CollectionReference<Map<String, dynamic>> get users =>
       _db.collection('users');
 
-  Future<DocumentReference> addTask(String title) {
-    return tasks.add({'title': title, 'createdAt': Timestamp.now()});
+  Future<DocumentReference<Map<String, dynamic>>> addTask({
+    required String title,
+    required String description,
+  }) {
+    final safeTitle = title.trim();
+    final safeDescription = description.trim();
+
+    if (safeTitle.isEmpty || safeDescription.isEmpty) {
+      throw ArgumentError('Title and description are required.');
+    }
+
+    return tasks.add({
+      'title': safeTitle,
+      'description': safeDescription,
+      'isCompleted': false,
+      'status': 'pending',
+      'createdAt': Timestamp.now(),
+      'updatedAt': Timestamp.now(),
+    });
+  }
+
+  Future<void> setTaskById({
+    required String taskId,
+    required Map<String, dynamic> data,
+    bool merge = true,
+  }) {
+    if (taskId.trim().isEmpty) {
+      throw ArgumentError('Task ID is required.');
+    }
+    return tasks.doc(taskId).set(data, SetOptions(merge: merge));
+  }
+
+  Future<void> updateTask({
+    required String taskId,
+    required String title,
+    required String description,
+  }) {
+    final safeTaskId = taskId.trim();
+    final safeTitle = title.trim();
+    final safeDescription = description.trim();
+
+    if (safeTaskId.isEmpty || safeTitle.isEmpty || safeDescription.isEmpty) {
+      throw ArgumentError('Task ID, title, and description are required.');
+    }
+
+    return tasks.doc(safeTaskId).update({
+      'title': safeTitle,
+      'description': safeDescription,
+      'updatedAt': Timestamp.now(),
+    });
   }
 
   Stream<QuerySnapshot<Map<String, dynamic>>> getTasks() {
