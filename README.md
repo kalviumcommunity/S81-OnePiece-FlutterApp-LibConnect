@@ -1944,3 +1944,105 @@ flowchart TD
 - [x] Field names/types are consistent and query-friendly
 - [x] Schema is understandable for new team members
 
+---
+
+## Sprint 2 - Firestore Read Operations (Live Data)
+
+### Project title and what data is read
+This lesson reads live Firestore data for:
+- `tasks` collection (list of task title/description/status)
+- `users/{uid}` document (single user profile details)
+- `tasks` filtered query where `status == 'pending'`
+
+### Collection read (one-time)
+```dart
+final tasksSnapshot = await FirebaseFirestore.instance
+    .collection('tasks')
+    .get();
+
+for (final doc in tasksSnapshot.docs) {
+  print(doc.data());
+}
+```
+
+### Document read (one-time)
+```dart
+final userDoc = await FirebaseFirestore.instance
+    .collection('users')
+    .doc(userId)
+    .get();
+
+print(userDoc.data());
+```
+
+### StreamBuilder (real-time read)
+```dart
+StreamBuilder(
+  stream: FirebaseFirestore.instance
+      .collection('tasks')
+      .orderBy('createdAt', descending: true)
+      .snapshots(),
+  builder: (context, snapshot) {
+    if (!snapshot.hasData) {
+      return const CircularProgressIndicator();
+    }
+
+    final tasks = snapshot.data!.docs;
+    return ListView.builder(
+      itemCount: tasks.length,
+      itemBuilder: (context, index) {
+        final task = tasks[index].data();
+        return ListTile(
+          title: Text(task['title']?.toString() ?? 'Untitled Task'),
+          subtitle: Text(task['description']?.toString() ?? 'No description'),
+        );
+      },
+    );
+  },
+);
+```
+
+### FutureBuilder (single document in UI)
+```dart
+FutureBuilder(
+  future: FirebaseFirestore.instance
+      .collection('users')
+      .doc(userId)
+      .get(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const CircularProgressIndicator();
+    }
+
+    final data = snapshot.data?.data();
+    if (data == null) {
+      return const Text('No profile data available');
+    }
+
+    return Text('Name: user loaded');
+  },
+);
+```
+
+### Screenshots
+- Firestore data in console: add screenshot at `assets/screenshots/firestore-console-read.png`
+- App UI showing Firestore data: add screenshot at `assets/screenshots/firestore-ui-read.png`
+
+### Reflection
+- Read method used: Real-time stream with `StreamBuilder` for `tasks`, and one-time `FutureBuilder` for `users/{uid}`.
+- Why streams are useful: UI updates instantly whenever Firestore changes, without manual refresh.
+- Challenges faced: Handling empty docs/missing fields safely and making sure query/order fields exist in Firestore.
+
+### Submission checklist
+- Commit message: `feat: implemented Firestore read operations for live data display`
+- PR title: `[Sprint-2] Firestore Read Operations – TeamName`
+- PR description includes:
+  - Collections/documents read (`tasks`, `users/{uid}`)
+  - Code snippets
+  - Screenshots
+  - Reflection
+- 1–2 minute video demo includes:
+  - Firestore Console data
+  - App UI live data display
+  - Manual Firestore update and instant UI change
+
