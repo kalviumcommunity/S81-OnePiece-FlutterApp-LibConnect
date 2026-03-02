@@ -4,14 +4,29 @@ class FirestoreService {
   final _db = FirebaseFirestore.instance;
 
   // ── Tasks ──────────────────────────────────────────────
-  CollectionReference get tasks => _db.collection('tasks');
+  CollectionReference<Map<String, dynamic>> get tasks =>
+      _db.collection('tasks');
+  CollectionReference<Map<String, dynamic>> get users =>
+      _db.collection('users');
 
   Future<DocumentReference> addTask(String title) {
     return tasks.add({'title': title, 'createdAt': Timestamp.now()});
   }
 
-  Stream<QuerySnapshot> getTasks() {
+  Stream<QuerySnapshot<Map<String, dynamic>>> getTasks() {
     return tasks.orderBy('createdAt', descending: true).snapshots();
+  }
+
+  Future<QuerySnapshot<Map<String, dynamic>>> getTasksOnce() {
+    return tasks.get();
+  }
+
+  Future<DocumentSnapshot<Map<String, dynamic>>> getUserDocument(String userId) {
+    return users.doc(userId).get();
+  }
+
+  Stream<QuerySnapshot<Map<String, dynamic>>> getPendingTasks() {
+    return tasks.where('status', isEqualTo: 'pending').snapshots();
   }
 
   // ── Notes ──────────────────────────────────────────────
@@ -22,7 +37,7 @@ class FirestoreService {
     });
   }
 
-  Stream<QuerySnapshot> getNotes() {
+  Stream<QuerySnapshot<Map<String, dynamic>>> getNotes() {
     return _db.collection('notes').snapshots();
   }
 
