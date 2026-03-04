@@ -13,6 +13,7 @@ import 'screens/state_management_demo.dart';
 import 'screens/responsive_home.dart';
 import 'screens/firestore_realtime_demo.dart';
 import 'screens/firestore_queries_demo.dart';
+import 'screens/firebase_storage_demo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -64,6 +65,7 @@ class MyApp extends StatelessWidget {
         '/responsive-design': (context) => const ResponsiveHome(),
         '/firestore-realtime': (context) => const FirestoreRealtimeDemo(),
         '/firestore-queries': (context) => const FirestoreQueriesDemo(),
+        '/firebase-storage': (context) => const FirebaseStorageDemo(),
       },
       
       // Handle unknown routes

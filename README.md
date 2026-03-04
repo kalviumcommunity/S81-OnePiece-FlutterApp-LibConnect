@@ -2663,3 +2663,216 @@ FirebaseFirestore.instance
 - UX: Instant, snappy
 
 **Key Takeaway:** Firestore queries distribute filtering to the backend, reduce app complexity, and enable lightning-fast user experiences. Always filter at the database level!
+
+---
+
+## Firebase Storage: Uploading, Managing, and Displaying Files
+
+This section demonstrates how to implement file uploads, downloads, and management using Firebase Cloud Storage.
+
+### 1. Why Firebase Storage Matters
+
+Firebase Storage provides:
+- **Scalable Media Hosting**: Unlimited files with automatic scaling
+- **Fast CDN Distribution**: Files served globally
+- **Security Rules**: Control upload/download access
+- **Progress Tracking**: Monitor upload status
+- **Cost-Effective**: Pay-as-you-go pricing
+
+### 2. Uploading Files
+
+```dart
+Future<String> uploadImage() async {
+  final ImagePicker picker = ImagePicker();
+  final XFile? pickedFile = await picker.pickImage(
+    source: ImageSource.gallery,
+  );
+
+  if (pickedFile == null) return '';
+
+  try {
+    final File file = File(pickedFile.path);
+    String fileName = DateTime.now().millisecondsSinceEpoch.toString();
+    
+    final Reference ref = FirebaseStorage.instance
+        .ref("uploads/user_images/$fileName.jpg");
+    
+    await ref.putFile(file);
+    return await ref.getDownloadURL();
+  } catch (e) {
+    print('Upload failed: $e');
+    return '';
+  }
+}
+```
+
+### 3. Getting Download URLs
+
+```dart
+String downloadURL = await FirebaseStorage.instance
+    .ref("uploads/user_images/photo_123.jpg")
+    .getDownloadURL();
+```
+
+### 4. Displaying Images with Error Handling
+
+```dart
+Image.network(
+  downloadURL,
+  width: 200,
+  height: 200,
+  fit: BoxFit.cover,
+  errorBuilder: (context, error, stackTrace) {
+    return Icon(Icons.broken_image);
+  },
+)
+```
+
+### 5. Deleting Files
+
+```dart
+Future<void> deleteFile(String storagePath) async {
+  try {
+    await FirebaseStorage.instance.ref(storagePath).delete();
+  } catch (e) {
+    print('Delete failed: $e');
+  }
+}
+```
+
+### 6. Upload Progress Tracking
+
+```dart
+final UploadTask uploadTask = ref.putFile(file);
+
+uploadTask.snapshotEvents.listen((TaskSnapshot snapshot) {
+  double progress = snapshot.bytesTransferred / snapshot.totalBytes;
+  print('Upload progress: ${(progress * 100).toStringAsFixed(2)}%');
+});
+```
+
+### 7. Firebase Storage Security Rules
+
+```javascript
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Require authentication for uploads
+    match /uploads/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if request.auth != null && request.auth.uid == userId;
+    }
+    
+    // Validate file types
+    match /uploads/{allPaths=**} {
+      allow write: if request.resource.contentType.matches('image/.*');
+    }
+    
+    // Limit file size (1 MB)
+    match /uploads/{allPaths=**} {
+      allow write: if request.resource.size < 1 * 1024 * 1024;
+    }
+  }
+}
+```
+
+### 8. StorageService Implementation
+
+The app includes a complete service at [lib/services/storage_service.dart](lib/services/storage_service.dart) with methods:
+
+- `uploadFile()` - Upload file to Firebase
+- `uploadFileWithMetadata()` - Upload with metadata
+- `getDownloadUrl()` - Get public URL
+- `deleteFile()` - Remove files
+- `getFileMetadata()` - Get file info
+- `listFiles()` - List files in folder
+- `generateUniqueFileName()` - Create unique names
+- `isFileSizeValid()` - Validate before upload
+
+### 9. Firebase Storage Demo
+
+Access the demo at `/firebase-storage`:
+
+**Features:**
+- Image picker (gallery/camera)
+- File upload to Firebase
+- Display uploaded images
+- Delete files with confirmation
+- Upload progress tracking
+- Error handling
+
+### 10. Common Mistakes to Avoid
+
+**❌ No Size Validation**
+```dart
+// BAD
+await ref.putFile(file);
+
+// GOOD
+if (!storageService.isFileSizeValid(filePath, 10)) {
+  throw Exception('File too large');
+}
+```
+
+**❌ No Error Handling**
+```dart
+// BAD
+final url = await ref.putFile(file).then(...);
+
+// GOOD
+try {
+  final url = await ref.putFile(file).then(...);
+} catch (e) {
+  showErrorMessage('Upload failed: $e');
+}
+```
+
+**❌ Storing Paths Instead of URLs**
+```dart
+// BAD - Path may change
+await db.update({'photo': 'uploads/photo.jpg'});
+
+// GOOD - Store download URL
+final url = await ref.getDownloadURL();
+await db.update({'photo': url});
+```
+
+### 11. Complete Workflow
+
+```dart
+// 1. Pick file
+final XFile? file = await picker.pickImage(source: ImageSource.gallery);
+
+// 2. Upload
+final url = await storageService.uploadFile(
+  folderPath: 'uploads/user_images/',
+  fileName: 'profile.jpg',
+  filePath: file!.path,
+);
+
+// 3. Store URL in Firestore
+await firestore.collection('users').doc(uid).update({'avatar': url});
+
+// 4. Display
+Image.network(url)
+```
+
+### 12. File Organization
+
+Structure storage logically:
+
+```
+gs://bucket-name/
+├── user_profiles/{userId}/profile.jpg
+├── book_covers/{bookId}/cover.jpg
+├── documents/{userId}/backup.pdf
+└── temp/{sessionId}/upload.jpg
+```
+
+### 13. Key Takeaway
+
+Firebase Storage handles file management complexity — scaling, security, CDN distribution. Always:
+- Validate file size before upload
+- Use security rules to prevent unauthorized access
+- Store download URLs in Firestore, not file paths
+- Handle errors gracefully with Loading/Error states
