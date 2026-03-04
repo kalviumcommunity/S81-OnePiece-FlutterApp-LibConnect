@@ -2876,3 +2876,680 @@ Firebase Storage handles file management complexity — scaling, security, CDN d
 - Use security rules to prevent unauthorized access
 - Store download URLs in Firestore, not file paths
 - Handle errors gracefully with Loading/Error states
+
+---
+
+## Cloud Functions: Callable and Event-Based Serverless Logic
+
+This section demonstrates how to implement serverless backend logic using Firebase Cloud Functions, including callable functions (invoked from Flutter) and event-triggered functions (Firestore/Auth triggers).
+
+### 1. Why Cloud Functions Matter
+
+Cloud Functions provide:
+- **Serverless Compute**: No servers to manage
+- **Auto-Scaling**: Handle any load automatically
+- **Security**: Server-side validation and logic
+- **Cost-Effective**: Pay only for execution
+- **Integration**: Call third-party APIs safely
+- **Reliability**: Automatic retries and error handling
+
+### 2. Understanding Function Types
+
+**Callable Functions** — Invoked directly from Flutter app:
+```dart
+final callable = FirebaseFunctions.instance.httpsCallable('sayHello');
+final result = await callable.call({'name': 'Alex'});
+```
+
+**Firestore Triggers** — Run automatically when data changes:
+```javascript
+exports.newUserCreated = functions.firestore
+  .document('users/{userId}')
+  .onCreate(async (snap, context) => {
+    // Send welcome email, create profile, etc.
+  });
+```
+
+**Auth Triggers** — Run when user accounts change:
+```javascript
+exports.welcomeNewUser = functions.auth
+  .user()
+  .onCreate(async (user) => {
+    // Send welcome email to user
+  });
+```
+
+**HTTP Functions** — Web endpoints for webhooks:
+```javascript
+exports.webhook = functions.https.onRequest((req, res) => {
+  return res.json({ message: 'Received!' });
+});
+```
+
+### 3. Prerequisites: Install Firebase Tools
+
+```bash
+# Install Node.js (if not already installed)
+# Download from https://nodejs.org/
+
+# Install Firebase CLI
+npm install -g firebase-tools
+
+# Login to Firebase
+firebase login
+
+# Navigate to your project directory
+cd your_flutter_project
+```
+
+### 4. Initialize Cloud Functions
+
+```bash
+# From your Flutter project root
+firebase init functions
+
+# Choose:
+# - Language: JavaScript or TypeScript
+# - ESLint: Yes (for code quality)
+# - npm install: Yes
+```
+
+This creates a `functions/` directory with:
+
+```
+functions/
+├── index.js       (Main function code)
+├── package.json   (Dependencies)
+└── .eslintrc.json (Linting rules)
+```
+
+### 5. Creating a Simple Callable Function
+
+**Backend (functions/index.js):**
+
+```javascript
+const functions = require('firebase-functions');
+
+exports.sayHello = functions.https.onCall((data, context) => {
+  const name = data.name || 'Guest';
+  return {
+    message: `Hello, ${name}! Welcome to LibConnect.`,
+    timestamp: new Date().toISOString(),
+  };
+});
+```
+
+**Flutter Code:**
+
+```dart
+Future<void> callSayHello() async {
+  try {
+    final callable = FirebaseFunctions.instance.httpsCallable('sayHello');
+    final result = await callable.call({'name': 'Alex'});
+    
+    print('Result: ${result.data['message']}');
+    // Output: Hello, Alex! Welcome to LibConnect.
+  } on FirebaseFunctionsException catch (e) {
+    print('Error: ${e.message}');
+  }
+}
+```
+
+### 6. Returning Complex Data from Functions
+
+**Backend (functions/index.js):**
+
+```javascript
+exports.getUserData = functions.https.onCall(async (data, context) => {
+  const userId = data.userId;
+  
+  // Get user from Firestore
+  const userDoc = await admin.firestore()
+    .collection('users')
+    .doc(userId)
+    .get();
+  
+  return {
+    success: true,
+    user: userDoc.data(),
+    totalBooks: userDoc.data()?.books?.length || 0,
+  };
+});
+```
+
+**Flutter Code:**
+
+```dart
+final result = await callable.call({'userId': user.uid});
+final userData = result.data['user'];
+final bookCount = result.data['totalBooks'];
+```
+
+### 7. Error Handling in Cloud Functions
+
+**Backend (functions/index.js):**
+
+```javascript
+exports.validateEmail = functions.https.onCall((data, context) => {
+  // Check authentication
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Must be logged in to validate email'
+    );
+  }
+  
+  const email = data.email;
+  if (!email.includes('@')) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'Email must contain @ symbol'
+    );
+  }
+  
+  return { valid: true };
+});
+```
+
+**Flutter Code:**
+
+```dart
+try {
+  await callable.call({'email': 'user@example.com'});
+} on FirebaseFunctionsException catch (e) {
+  if (e.code == 'unauthenticated') {
+    print('Please log in first');
+  } else if (e.code == 'invalid-argument') {
+    print('Invalid email format');
+  }
+}
+```
+
+### 8. Firestore Trigger Functions
+
+**Backend (functions/index.js) — Event-Triggered:**
+
+```javascript
+// When a new user document is created
+exports.newUserCreated = functions.firestore
+  .document('users/{userId}')
+  .onCreate(async (snap, context) => {
+    const userId = context.params.userId;
+    const userData = snap.data();
+    
+    // Send welcome email
+    const nodemailer = require('nodemailer');
+    const transporter = nodemailer.createTransport({
+      // Configure email provider
+    });
+    
+    await transporter.sendMail({
+      to: userData.email,
+      subject: 'Welcome to LibConnect!',
+      html: `<h1>Welcome ${userData.name}!</h1>`,
+    });
+    
+    // Create user profile document
+    await snap.ref.parent.doc(userId).update({
+      displayName: userData.name,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      isNewUser: true,
+    });
+  });
+
+// When a user document is updated
+exports.userUpdated = functions.firestore
+  .document('users/{userId}')
+  .onUpdate(async (change, context) => {
+    const beforeData = change.before.data();
+    const afterData = change.after.data();
+    
+    console.log('User updated:', {
+      before: beforeData,
+      after: afterData,
+    });
+  });
+
+// When a user document is deleted
+exports.userDeleted = functions.firestore
+  .document('users/{userId}')
+  .onDelete(async (snap, context) => {
+    const userId = context.params.userId;
+    console.log('User deleted:', userId);
+  });
+```
+
+**Flutter Code — Listening to Changes:**
+
+```dart
+// Listen to Firestore to see effects of trigger functions
+FirebaseFirestore.instance
+  .collection('users')
+  .doc(userId)
+  .snapshots()
+  .listen((snapshot) {
+    if (snapshot.exists) {
+      final createdAt = snapshot['createdAt'];
+      print('User created at: $createdAt'); // Set by trigger function
+    }
+  });
+```
+
+### 9. Publishing and Deploying Functions
+
+```bash
+# Deploy all functions
+firebase deploy --only functions
+
+# Deploy specific function
+firebase deploy --only functions:sayHello
+
+# Deploy with different regions
+firebase deploy --only functions --region us-central1,europe-west1
+```
+
+### 10. Viewing Function Logs
+
+**Option 1: Firebase Console**
+
+```
+https://console.firebase.google.com/functions/logs?project=your-project-id
+```
+
+**Option 2: Terminal**
+
+```bash
+firebase functions:log
+```
+
+**Option 3: Using SDK in Code**
+
+```dart
+String logsUrl = 'https://console.firebase.google.com/functions/logs?project=$projectId';
+```
+
+### 11. Local Testing with Emulator
+
+**Backend (functions/index.js):**
+
+```javascript
+exports.testWithData = functions.https.onCall((data, context) => {
+  return { 
+    received: data,
+    executedLocally: true 
+  };
+});
+```
+
+**Terminal:**
+
+```bash
+firebase emulators:start --only functions
+```
+
+**Flutter Code:**
+
+```dart
+// Connect to emulator
+FirebaseFunctions.instance.useFunctionsEmulator('localhost', 5001);
+
+final result = await callable.call({'test': 'data'});
+```
+
+### 12. Common Use Cases
+
+**E-Commerce Order Processing:**
+
+```javascript
+exports.processOrder = functions.https.onCall(async (data, context) => {
+  const orderId = data.orderId;
+  const paymentIntent = await stripe.paymentIntents.create({
+    amount: data.amount,
+    currency: 'usd',
+  });
+  
+  await admin.firestore()
+    .collection('orders')
+    .doc(orderId)
+    .update({ paymentIntentId: paymentIntent.id });
+  
+  return { success: true };
+});
+```
+
+**PDF Generation:**
+
+```javascript
+exports.generateInvoice = functions.https.onCall(async (data, context) => {
+  const PDFDocument = require('pdfkit');
+  const pdf = new PDFDocument();
+  
+  // Create invoice PDF
+  pdf.fontSize(25).text('Invoice');
+  
+  const buffer = await new Promise((resolve) => {
+    pdf.on('finish', () => resolve(pdf.getBuffer()));
+    pdf.end();
+  });
+  
+  // Upload to Storage
+  await admin.storage()
+    .bucket()
+    .file(`invoices/${data.invoiceId}.pdf`)
+    .save(buffer);
+  
+  return { success: true };
+});
+```
+
+**Data Synchronization:**
+
+```javascript
+exports.syncBookRatings = functions.https.onCall(async (data, context) => {
+  // Get all book reviews
+  const reviews = await admin.firestore()
+    .collection('reviews')
+    .get();
+  
+  // Calculate average rating
+  const bookRatings = {};
+  reviews.docs.forEach(doc => {
+    const bookId = doc.data().bookId;
+    const rating = doc.data().rating;
+    
+    if (!bookRatings[bookId]) {
+      bookRatings[bookId] = { sum: 0, count: 0 };
+    }
+    bookRatings[bookId].sum += rating;
+    bookRatings[bookId].count += 1;
+  });
+  
+  // Update book documents
+  for (const [bookId, data] of Object.entries(bookRatings)) {
+    await admin.firestore()
+      .collection('books')
+      .doc(bookId)
+      .update({
+        averageRating: data.sum / data.count,
+        totalReviews: data.count,
+      });
+  }
+  
+  return { success: true, processed: Object.keys(bookRatings).length };
+});
+```
+
+### 13. Best Practices
+
+**✓ Always Validate Input**
+
+```javascript
+// BAD
+exports.updateProfile = functions.https.onCall((data) => {
+  return admin.firestore()
+    .collection('users')
+    .doc(data.userId)
+    .update(data); // Any data!
+});
+
+// GOOD
+exports.updateProfile = functions.https.onCall((data) => {
+  if (!data.userId || !data.name) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'userId and name are required'
+    );
+  }
+  
+  return admin.firestore()
+    .collection('users')
+    .doc(data.userId)
+    .update({ name: data.name }); // Only name
+});
+```
+
+**✓ Authenticate Sensitive Operations**
+
+```javascript
+exports.deleteUserData = functions.https.onCall((data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'User must be logged in'
+    );
+  }
+  
+  // Verify user is deleting their own data
+  if (context.auth.uid !== data.userId) {
+    throw new functions.https.HttpsError(
+      'permission-denied',
+      'Cannot delete other user data'
+    );
+  }
+  
+  return admin.firestore()
+    .collection('users')
+    .doc(data.userId)
+    .delete();
+});
+```
+
+**✓ Use Environment Variables**
+
+```javascript
+// In functions/.env.local
+SENDGRID_API_KEY=your_key_here
+STRIPE_SECRET_KEY=your_key_here
+
+// In functions/index.js
+const functions = require('firebase-functions');
+const admin = require('firebase-admin');
+admin.initializeApp();
+
+// Load environment variables
+const config = functions.config();
+const sendgridKey = process.env.SENDGRID_API_KEY;
+```
+
+**✓ Handle Long-Running Operations**
+
+```javascript
+// Don't let function timeout
+exports.processLargeDataset = functions.https.onCall(async (data) => {
+  // Return confirmation immediately
+  return { messageId: 'task_123', status: 'processing' };
+});
+
+// Use Cloud Tasks or background functions for heavy work
+exports.processLargeDatasetBackground = functions
+  .runWith({
+    timeoutSeconds: 540, // 9 minutes max
+    memory: '2GB',
+  })
+  .https.onCall(async (data, context) => {
+    // Do heavy processing
+  });
+```
+
+### 14. Common Mistakes to Avoid
+
+**❌ Missing Authentication Check**
+
+```javascript
+// BAD - Anyone can delete data
+exports.deleteData = functions.https.onCall(async (data) => {
+  await admin.firestore()
+    .collection('important')
+    .doc(data.id)
+    .delete();
+});
+
+// GOOD - Only logged-in users
+exports.deleteData = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError(
+      'unauthenticated',
+      'Must be logged in'
+    );
+  }
+  const userId = context.auth.uid;
+  // Verify ownership before deleting
+});
+```
+
+**❌ Not Handling Network Errors**
+
+```dart
+// BAD - App crashes on error
+final result = await callable.call(data);
+print(result.data['message']);
+
+// GOOD - Graceful error handling
+try {
+  final result = await callable.call(data);
+  print(result.data['message']);
+} on FirebaseFunctionsException catch (e) {
+  print('Function error: ${e.code} - ${e.message}');
+  showErrorDialog('Something went wrong. Please try again.');
+} catch (e) {
+  print('Network error: $e');
+  showErrorDialog('Network connection failed.');
+}
+```
+
+**❌ Exposing Sensitive information**
+
+```javascript
+// BAD - API keys visible in code
+const stripe = require('stripe')('sk_live_12345');
+
+// GOOD - Use environment variables
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
+```
+
+### 15. Integration with LibConnect
+
+**Scenario 1: New User Signup**
+
+```javascript
+// Cloud Function - Listen to auth user creation
+exports.setupNewUserProfile = functions.auth
+  .user()
+  .onCreate(async (user) => {
+    // Create Firestore user document
+    await admin.firestore()
+      .collection('users')
+      .doc(user.uid)
+      .set({
+        email: user.email,
+        displayName: user.displayName || 'Anonymous',
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        role: 'member',
+        booksRead: 0,
+        favoriteBooks: [],
+      });
+    
+    // Send welcome email (via nodemailer or SendGrid)
+    console.log(`Welcome email queued for ${user.email}`);
+  });
+```
+
+**Scenario 2: Chat Message Notifications**
+
+```javascript
+// Cloud Function - Called when user sends message
+exports.notifyNewMessage = functions.https.onCall(async (data, context) => {
+  const userId = context.auth.uid;
+  const recipientId = data.recipientId;
+  const message = data.message;
+  
+  // Store message in Firestore
+  await admin.firestore()
+    .collection('messages')
+    .add({
+      senderId: userId,
+      recipientId: recipientId,
+      message: message,
+      timestamp: admin.firestore.FieldValue.serverTimestamp(),
+    });
+  
+  // Send push notification to recipient
+  const recipientToken = (await admin.firestore()
+    .collection('users')
+    .doc(recipientId)
+    .get()).data().fcmToken;
+  
+  if (recipientToken) {
+    await admin.messaging().send({
+      token: recipientToken,
+      notification: {
+        title: 'New Message',
+        body: message.substring(0, 50),
+      },
+    });
+  }
+  
+  return { success: true };
+});
+```
+
+**Scenario 3: Book Rating Update**
+
+```javascript
+// Cloud Function - Triggered when rating is added
+exports.updateBookRating = functions.firestore
+  .document('books/{bookId}/ratings/{ratingId}')
+  .onCreate(async (snap, context) => {
+    const bookId = context.params.bookId;
+    const ratingData = snap.data();
+    
+    // Get all ratings for this book
+    const ratings = await admin.firestore()
+      .collection('books')
+      .doc(bookId)
+      .collection('ratings')
+      .get();
+    
+    // Calculate average
+    const ratings = ratings.docs.map(d => d.data().score);
+    const average = ratings.reduce((a, b) => a + b, 0) / ratings.length;
+    
+    // Update main book document
+    await admin.firestore()
+      .collection('books')
+      .doc(bookId)
+      .update({
+        averageRating: average,
+        totalRatings: ratings.length,
+      });
+  });
+```
+
+### 16. Monitoring and Debugging
+
+**Check Function Performance:**
+
+```bash
+# View logs in terminal
+firebase functions:log -n 50
+
+# View specific function logs
+firebase functions:log --only sayHello
+```
+
+**Monitor Costs:**
+
+Cloud Functions pricing:
+- First 2M invocations/month: FREE
+- Each invocation: $0.40 per 1M calls
+- Compute time: $0.0000166667 per GB-second
+
+**Example:** 1 million function calls per month = $0
+
+### 17. Key Takeaway
+
+Cloud Functions move backend logic to the cloud:
+- **Callable Functions** handle on-demand operations (form submissions, API calls)
+- **Trigger Functions** automate workflows (welcome emails, data cleanup)
+- **Secure Validation** happens server-side, not on client
+- **Always Deploy** functions through Firebase CLI before testing
