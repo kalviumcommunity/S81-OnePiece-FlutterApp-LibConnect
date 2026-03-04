@@ -10,86 +10,7 @@ Our team of three members is developing LibConnect, a Flutter and Firebase-based
 LibConnect is a Flutter and Firebase-based mobile app concept to modernize public library management with real-time book discovery, reservations, and user tracking.
 
 ### Folder structure and purpose
----
-
-## Sprint 2 - Firestore Write & Update Operations
-
-### Project title
-Firestore Write & Update Operations for LibConnect Task Management
-
-### What this lesson writes to Firestore
-The app writes task data to the `tasks` collection with:
-- `add` for creating new task documents with auto IDs
-- `set` with merge for safe partial writes (`taskId` field)
-- `update` for modifying existing fields (title and description)
-
-### Add vs Set vs Update
-- **Add**: creates a new document with an auto-generated ID.
-- **Set**: writes to a specific document ID; with `SetOptions(merge: true)` it updates only supplied fields.
-- **Update**: changes specific fields in an existing document without overwriting the full document.
-
-### Input form snippet
-```dart
-TextField(
-  controller: _titleController,
-  decoration: const InputDecoration(labelText: 'Title'),
-),
-TextField(
-  controller: _descriptionController,
-  decoration: const InputDecoration(labelText: 'Description'),
-),
-ElevatedButton(
-  onPressed: _addTask,
-  child: const Text('Add Task'),
-)
 ```
-
-### Add operation snippet
-```dart
-final createdDoc = await firestore.addTask(
-  title: title,
-  description: description,
-);
-
-await firestore.setTaskById(
-  taskId: createdDoc.id,
-  data: {'taskId': createdDoc.id},
-  merge: true,
-);
-```
-
-### Update operation snippet
-```dart
-await firestore.updateTask(
-  taskId: taskId,
-  title: title,
-  description: description,
-);
-```
-
-### Screenshots
-- App UI add/update form: add screenshot at `assets/screenshots/firestore-write-ui.png`
-- Firestore console with created/updated docs: add screenshot at `assets/screenshots/firestore-write-console.png`
-
-### Reflection
-- **Why secure writes matter:** They reduce accidental overwrites, protect schema consistency, and keep production data reliable.
-- **Difference between add, set, update:** `add` creates new docs, `set` targets a known doc ID (merge optional), `update` modifies selected fields only.
-- **How validation prevents corruption:** Checking empty fields and expected types before writes prevents incomplete or malformed records.
-
-### Submission guidelines
-- Commit message: `feat: implemented add and update operations for Firestore data`
-- PR title: `[Sprint-2] Firestore Write & Update Operations – TeamName`
-- PR description includes:
-  - What data your app writes (`tasks` title/description/status/timestamps)
-  - Code snippets for input, add, and update operations
-  - Screenshots from app and Firestore console
-  - Reflection
-- 1–2 minute video demo should show:
-  - Adding task data from app
-  - New record appearing in Firestore console
-  - Updating task data from app
-  - Updated record in Firestore console
-  - UI reflecting changes in real time
 lib/
   main.dart           # App entry point and initial routing
   screens/            # Individual UI screens
@@ -2025,55 +1946,103 @@ flowchart TD
 
 ---
 
-## Sprint 2 - Firestore Read Operations (Live Data)
+## Firestore Real-Time Listeners & StreamBuilder
 
-### Project title and what data is read
-This lesson reads live Firestore data for:
-- `tasks` collection (list of task title/description/status)
-- `users/{uid}` document (single user profile details)
-- `tasks` filtered query where `status == 'pending'`
+This section demonstrates how to implement real-time data synchronization using Firestore snapshot listeners and Flutter's `StreamBuilder` widget. Real-time updates are critical for modern applications like chat apps, live dashboards, and inventory management systems.
 
-### Collection read (one-time)
+### 1. Why Real-Time Sync Matters
+
+Real-time synchronization improves user experience by:
+- **Eliminating Manual Refresh**: Users see updates instantly without pulling down to refresh
+- **Multi-User Collaboration**: Changes from other users appear instantly
+- **Live Notifications**: Status updates, new messages, or inventory changes trigger UI updates immediately
+- **Reduced Server Load**: Firestore efficiently handles multiple concurrent listeners
+- **Better Engagement**: Live feeds and dashboards keep users engaged
+
+### 2. Firestore Snapshot Listeners Overview
+
+Firestore provides two types of snapshot listeners:
+
+#### a) Collection Snapshots (Real-Time Collection Updates)
+
+Listens to all documents in a collection and triggers whenever any document is added, updated, or deleted.
+
+**Code Example:**
 ```dart
-final tasksSnapshot = await FirebaseFirestore.instance
-    .collection('tasks')
-    .get();
-
-for (final doc in tasksSnapshot.docs) {
-  print(doc.data());
-}
+FirebaseFirestore.instance
+  .collection('tasks')
+  .snapshots();  // Returns Stream<QuerySnapshot>
 ```
 
-### Document read (one-time)
-```dart
-final userDoc = await FirebaseFirestore.instance
-    .collection('users')
-    .doc(userId)
-    .get();
+**Triggers When:**
+- A new document is added to the collection
+- An existing document's field is updated
+- A document is deleted from the collection
+- Multiple rapid changes occur (batched updates)
 
-print(userDoc.data());
+**Use Cases:**
+- Task management lists
+- Real-time chat messages
+- Live notification feeds
+- Inventory updates
+
+#### b) Document Snapshots (Real-Time Single Document Updates)
+
+Listens to a specific document and triggers whenever any field in that document is updated.
+
+**Code Example:**
+```dart
+FirebaseFirestore.instance
+  .collection('users')
+  .doc(userId)
+  .snapshots();  // Returns Stream<DocumentSnapshot>
 ```
 
-### StreamBuilder (real-time read)
+**Triggers When:**
+- Any field in the document is modified
+- Server-side values update (e.g., server timestamps)
+- Nested objects within the document change
+
+**Use Cases:**
+- User profile live updates
+- Live status indicators (online/offline)
+- Dashboard values and analytics
+- Real-time counter updates
+
+### 3. Using StreamBuilder for Reactive UI
+
+`StreamBuilder` is a Flutter widget that listens to a stream and rebuilds the UI whenever new data arrives. This is the primary way to display real-time Firestore data.
+
+#### Basic StreamBuilder Structure
+
 ```dart
-StreamBuilder(
+StreamBuilder<QuerySnapshot>(
   stream: FirebaseFirestore.instance
-      .collection('tasks')
-      .orderBy('createdAt', descending: true)
-      .snapshots(),
+    .collection('messages')
+    .snapshots(),
   builder: (context, snapshot) {
-    if (!snapshot.hasData) {
+    // Handle different connection states
+    if (snapshot.connectionState == ConnectionState.waiting) {
       return const CircularProgressIndicator();
     }
-
-    final tasks = snapshot.data!.docs;
+    
+    // Check for errors
+    if (snapshot.hasError) {
+      return Text('Error: ${snapshot.error}');
+    }
+    
+    // Check for data
+    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+      return const Text('No data available');
+    }
+    
+    // Display data
+    final docs = snapshot.data!.docs;
     return ListView.builder(
-      itemCount: tasks.length,
+      itemCount: docs.length,
       itemBuilder: (context, index) {
-        final task = tasks[index].data();
         return ListTile(
-          title: Text(task['title']?.toString() ?? 'Untitled Task'),
-          subtitle: Text(task['description']?.toString() ?? 'No description'),
+          title: Text(docs[index]['text']),
         );
       },
     );
@@ -2081,47 +2050,290 @@ StreamBuilder(
 );
 ```
 
-### FutureBuilder (single document in UI)
+### 4. Real-Time Collection Listener Example
+
+This example shows a live chat-like interface where messages appear instantly:
+
 ```dart
-FutureBuilder(
-  future: FirebaseFirestore.instance
-      .collection('users')
-      .doc(userId)
-      .get(),
+StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+  stream: FirebaseFirestore.instance
+    .collection('messages')
+    .orderBy('createdAt', descending: true)
+    .snapshots(),
   builder: (context, snapshot) {
     if (snapshot.connectionState == ConnectionState.waiting) {
-      return const CircularProgressIndicator();
+      return const Center(child: CircularProgressIndicator());
     }
-
-    final data = snapshot.data?.data();
-    if (data == null) {
-      return const Text('No profile data available');
+    
+    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+      return const Center(child: Text('No messages yet'));
     }
-
-    return Text('Name: user loaded');
+    
+    final messages = snapshot.data!.docs;
+    
+    return ListView.builder(
+      reverse: true,
+      itemCount: messages.length,
+      itemBuilder: (context, index) {
+        final msg = messages[index];
+        return ListTile(
+          title: Text(msg['text']),
+          subtitle: Text(
+            msg['createdAt'].toDate().toString(),
+          ),
+        );
+      },
+    );
   },
 );
 ```
 
-### Screenshots
-- Firestore data in console: add screenshot at `assets/screenshots/firestore-console-read.png`
-- App UI showing Firestore data: add screenshot at `assets/screenshots/firestore-ui-read.png`
+**How It Works:**
+1. **`.snapshots()`** returns a Stream that emits a new `QuerySnapshot` whenever the collection changes
+2. **`StreamBuilder`** listens to this stream
+3. When new data arrives, the `builder` function is called with the latest snapshot
+4. The UI rebuilds automatically with the new data
+5. Each message appears in real-time without manual refresh
 
-### Reflection
-- Read method used: Real-time stream with `StreamBuilder` for `tasks`, and one-time `FutureBuilder` for `users/{uid}`.
-- Why streams are useful: UI updates instantly whenever Firestore changes, without manual refresh.
-- Challenges faced: Handling empty docs/missing fields safely and making sure query/order fields exist in Firestore.
+### 5. Real-Time Document Listener Example
 
-### Submission checklist
-- Commit message: `feat: implemented Firestore read operations for live data display`
-- PR title: `[Sprint-2] Firestore Read Operations – TeamName`
-- PR description includes:
-  - Collections/documents read (`tasks`, `users/{uid}`)
-  - Code snippets
-  - Screenshots
-  - Reflection
-- 1–2 minute video demo includes:
-  - Firestore Console data
-  - App UI live data display
-  - Manual Firestore update and instant UI change
+This example shows how to listen to a single user's profile for live updates:
 
+```dart
+StreamBuilder<DocumentSnapshot<Map<String, dynamic>>>(
+  stream: FirebaseFirestore.instance
+    .collection('users')
+    .doc(userId)
+    .snapshots(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Text('Loading...');
+    }
+    
+    if (!snapshot.hasData || !snapshot.data!.exists) {
+      return const Text('User not found');
+    }
+    
+    final userData = snapshot.data!.data()!;
+    
+    return Column(
+      children: [
+        CircleAvatar(
+          backgroundImage: NetworkImage(userData['avatarUrl']),
+        ),
+        Text('Name: ${userData['name']}'),
+        Text('Status: ${userData['status']}'),
+        Text('Last Updated: ${userData['lastUpdated']}'),
+      ],
+    );
+  },
+);
+```
+
+**Useful For:**
+- **Live User Profiles**: Name, avatar, bio updates
+- **Status Indicators**: Online/offline status that updates in real-time
+- **Dashboard Values**: Live analytics, counts, balances
+- **Settings Sync**: User preferences that change across devices
+
+### 6. Handling Loading, Error, and Empty States
+
+Proper state management ensures your app never crashes:
+
+```dart
+StreamBuilder(
+  stream: _firestoreService.getTasks(),
+  builder: (context, snapshot) {
+    // Loading state - connection waiting
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(
+        child: CircularProgressIndicator(),
+      );
+    }
+    
+    // Error state
+    if (snapshot.hasError) {
+      return Center(
+        child: Text(
+          'Error: ${snapshot.error}',
+          style: const TextStyle(color: Colors.red),
+        ),
+      );
+    }
+    
+    // Empty state
+    if (!snapshot.hasData || snapshot.data!.docs.isEmpty) {
+      return const Center(
+        child: Text('No tasks available'),
+      );
+    }
+    
+    // Success state - display data
+    final tasks = snapshot.data!.docs;
+    return ListView.builder(
+      itemCount: tasks.length,
+      itemBuilder: (context, index) {
+        return ListTile(
+          title: Text(tasks[index]['title']),
+        );
+      },
+    );
+  },
+);
+```
+
+### 7. Listening to Changes Manually (Advanced)
+
+For complex scenarios requiring custom logic, use `.listen()` instead of StreamBuilder:
+
+```dart
+FirebaseFirestore.instance
+  .collection('tasks')
+  .snapshots()
+  .listen((snapshot) {
+    for (var change in snapshot.docChanges) {
+      switch (change.type) {
+        case DocumentChangeType.added:
+          print('New task: ${change.doc['title']}');
+          // Show notification, animate, etc.
+          break;
+        case DocumentChangeType.modified:
+          print('Task updated: ${change.doc['title']}');
+          break;
+        case DocumentChangeType.removed:
+          print('Task deleted');
+          break;
+      }
+    }
+  });
+```
+
+**Useful For:**
+- Triggering push notifications when messages arrive
+- Playing sounds for real-time events
+- Auto-scrolling chat to newest messages
+- Logging activity events
+- Triggering animations or haptic feedback
+
+### 8. Implementation in FirestoreRealtimeDemo Screen
+
+The app includes a comprehensive demo at `/firestore-realtime` that showcases:
+
+**Features:**
+- ✅ **Add tasks** that appear instantly in the real-time list
+- ✅ **Real-time collection listener** using `StreamBuilder` with proper state handling
+- ✅ **Delete tasks** which instantly disappear from the list
+- ✅ **Single document listener example** with code snippets
+- ✅ **Error handling** for failed operations
+- ✅ **Loading states** for better UX
+- ✅ **Timestamp formatting** showing when each task was created
+
+**To Access the Demo:**
+```dart
+// In main.dart, navigate using:
+Navigator.pushNamed(context, '/firestore-realtime');
+
+// Or directly:
+Navigator.push(
+  context,
+  MaterialPageRoute(
+    builder: (context) => const FirestoreRealtimeDemo(),
+  ),
+);
+```
+
+### 9. Testing Real-Time Sync
+
+Follow these steps to verify real-time updates work correctly:
+
+#### Test in Firebase Console:
+
+1. **Add a Document**
+   - Open Firebase Console → Firestore Database
+   - Go to `tasks` collection
+   - Add a new document with: `{ title: "Test Task", description: "Testing", createdAt: timestamp }`
+   - Expected: Task appears in app UI instantly without refreshing
+
+2. **Update a Document**
+   - Click an existing task document
+   - Change the `title` field to something new
+   - Expected: Title updates in app UI instantly
+
+3. **Delete a Document**
+   - Select a document and click Delete
+   - Expected: Task disappears from app UI instantly
+
+4. **Rapid Changes**
+   - Make multiple rapid changes in console
+   - Expected: App stays consistent, no missing or duplicate items
+
+#### Test in App:
+
+1. **Add Task via UI**
+   - Enter title and description
+   - Click "Add Task"
+   - Expected: Task appears in list immediately with correct timestamp
+
+2. **Delete Task via UI**
+   - Click delete icon on a task
+   - Expected: Task disappears instantly, no lag
+
+3. **Multiple Instances**
+   - Open app on multiple devices/emulators
+   - Add/delete tasks on one device
+   - Expected: All devices see updates instantly (true real-time sync)
+
+### 10. Challenges & Solutions
+
+**Challenge 1: Too Many Listeners**
+- Problem: Creating multiple StreamBuilders for the same collection causes redundant listeners
+- Solution: Use `StreamProvider` from the `provider` package or restructure listeners at a higher widget level
+
+**Challenge 2: Slow Performance with Large Collections**
+- Problem: Listening to thousands of documents causes memory and performance issues
+- Solution: Use pagination or query filters like `.limit(20)` and `.orderBy()`
+
+**Challenge 3: Handling Offline Mode**
+- Problem: Listeners might fail if network is unavailable
+- Solution: Check `snapshot.connectionState` and show offline indicator
+
+**Challenge 4: Uncontrolled Rebuilds**
+- Problem: StreamBuilder rebuilds on every update, even for unchanged data
+- Solution: Use `const` constructors and extract complex widgets to separate classes to limit rebuilds
+
+### 11. Code Implementation Summary
+
+**Key Files:**
+- **lib/screens/firestore_realtime_demo.dart** - Full demo with collection and document listeners
+- **lib/services/firestore_service.dart** - Service methods like `getTasks()` that return Streams
+- **lib/main.dart** - Route registration for `/firestore-realtime`
+
+**Service Methods Used:**
+```dart
+// Collection snapshot listener
+Stream<QuerySnapshot<Map<String, dynamic>>> getTasks() {
+  return tasks.orderBy('createdAt', descending: true).snapshots();
+}
+
+// Single task by ID (document listener)
+Future<DocumentSnapshot<Map<String, dynamic>>> getUserDocument(String userId) {
+  return users.doc(userId).get();
+}
+```
+
+### 12. Reflection: Why Real-Time Matters for LibConnect
+
+For LibConnect's library management use case:
+
+**Before Real-Time Sync:**
+- Users manually refresh to see if a book became available
+- Librarians don't know if reserved books are picked up
+- Notification delays cause user frustration
+
+**After Real-Time Sync:**
+- Users see instant updates when books are reserved/available
+- Librarians see immediate feedback when actions occur
+- Notifications trigger instantly when relevant
+- Multi-device sync means consistent data everywhere
+
+**Key Takeaway:** Firestore's `.snapshots()` method combined with `StreamBuilder` transforms a static app into a dynamic, responsive system. By understanding when to use collection vs. document listeners, and properly handling loading/error states, we create seamless user experiences that feel instant and always up-to-date.
