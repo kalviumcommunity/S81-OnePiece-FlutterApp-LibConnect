@@ -11,6 +11,7 @@ import 'screens/simple_navigation_demo.dart';
 import 'screens/scrollable_views.dart';
 import 'screens/state_management_demo.dart';
 import 'screens/responsive_home.dart';
+import 'screens/firestore_realtime_demo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -60,6 +61,7 @@ class MyApp extends StatelessWidget {
         '/scrollable-views': (context) => const ScrollableViews(),
         '/state-management': (context) => StateManagementDemo(),
         '/responsive-design': (context) => const ResponsiveHome(),
+        '/firestore-realtime': (context) => const FirestoreRealtimeDemo(),
       },
       
       // Handle unknown routes
