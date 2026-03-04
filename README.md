@@ -2337,3 +2337,329 @@ For LibConnect's library management use case:
 - Multi-device sync means consistent data everywhere
 
 **Key Takeaway:** Firestore's `.snapshots()` method combined with `StreamBuilder` transforms a static app into a dynamic, responsive system. By understanding when to use collection vs. document listeners, and properly handling loading/error states, we create seamless user experiences that feel instant and always up-to-date.
+
+---
+
+## Firestore Queries: Filtering, Sorting, and Limiting Data
+
+This section demonstrates how to write efficient Firestore queries to fetch only relevant data. Queries are essential for scalability — instead of fetching all documents and filtering in-app, we let Firestore do the heavy lifting on the backend.
+
+### 1. Why Firestore Queries Matter
+
+Efficient queries reduce:
+- **Network Bandwidth**: Only fetch data you need
+- **App Memory**: Don't load unnecessary documents
+- **Processing Time**: Server-side filtering is faster
+- **Costs**: Firebase charges per read; fewer documents = lower costs
+
+**Real-World Impact:**
+- Without queries: Fetch 10,000 books → Filter in app → Slow, memory-heavy
+- With queries: Fetch only books matching criteria → Fast, efficient
+
+### 2. Basic Query Structure
+
+A Firestore query has this pattern:
+
+```dart
+FirebaseFirestore.instance
+  .collection('productName')           // Target collection
+  .where('fieldName', isEqualTo: value)    // Filter
+  .orderBy('fieldName')                // Sort
+  .limit(10);                          // Limit results
+```
+
+**Each part is optional:**
+- Queries work without filters, sorting, or limits
+- Chain multiple methods for complex queries
+
+### 3. Filters with where() Clauses
+
+Filters narrow down documents based on field values.
+
+#### a) Equality Filter
+
+```dart
+FirebaseFirestore.instance
+  .collection('tasks')
+  .where('status', isEqualTo: 'active')
+  .snapshots();
+```
+
+**Use Cases:** Status, category, user ID filtering
+
+#### b) Comparison Filters
+
+```dart
+// Greater than
+.where('price', isGreaterThan: 100)
+// Less than or equal
+.where('age', isLessThanOrEqualTo: 18)
+// Range query
+.where('year', isGreaterThanOrEqualTo: 2020)
+.where('year', isLessThan: 2024)
+```
+
+**Use Cases:** Price ranges, date ranges, rating thresholds
+
+#### c) Array Contains Filter
+
+```dart
+FirebaseFirestore.instance
+  .collection('products')
+  .where('tags', arrayContains: 'popular')
+  .snapshots();
+```
+
+**Use Cases:** Multi-tag filtering, role-based access
+
+#### d) In Filter
+
+```dart
+FirebaseFirestore.instance
+  .collection('users')
+  .where('status', whereIn: ['active', 'pending'])
+  .snapshots();
+```
+
+**Use Cases:** Multiple status/category selection
+
+### 4. Sorting with orderBy()
+
+Order results by a specific field.
+
+```dart
+// Ascending (default)
+.orderBy('priority')
+
+// Descending
+.orderBy('createdAt', descending: true)
+
+// Multiple fields
+.orderBy('grade', descending: true)
+.orderBy('name')
+```
+
+**Use Cases:** Sort by date, price, rating; multi-level sorting
+
+### 5. Limiting Results with limit()
+
+Fetch only a subset of documents:
+
+```dart
+.limit(10)  // Fetch maximum 10 documents
+```
+
+**Why limit()?**
+- ❌ Bad: Fetch all 100,000 books → Filter in app
+- ✅ Good: Fetch only first 20 via query
+
+**Pagination:**
+```dart
+var page1 = await collection
+  .orderBy('date')
+  .limit(20)
+  .get();
+
+var page2 = await collection
+  .orderBy('date')
+  .startAfter(page1.docs.last)
+  .limit(20)
+  .get();
+```
+
+### 6. Chaining Queries for Power
+
+Combine multiple operations:
+
+```dart
+FirebaseFirestore.instance
+  .collection('tasks')
+  .where('isCompleted', isEqualTo: false)        // Filter 1
+  .where('priority', isGreaterThan: 2)           // Filter 2
+  .orderBy('priority', descending: true)         // Sort
+  .limit(10)                                     // Limit
+  .snapshots();
+```
+
+### 7. Displaying Query Results with StreamBuilder
+
+Real-time filtered/sorted lists:
+
+```dart
+StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+  stream: FirebaseFirestore.instance
+    .collection('tasks')
+    .where('isCompleted', isEqualTo: false)
+    .orderBy('priority', descending: true)
+    .limit(20)
+    .snapshots(),
+  builder: (context, snapshot) {
+    if (!snapshot.hasData) return CircularProgressIndicator();
+    if (snapshot.data!.docs.isEmpty) return Text('No tasks found');
+
+    return ListView.builder(
+      itemCount: snapshot.data!.docs.length,
+      itemBuilder: (context, index) {
+        final task = snapshot.data!.docs[index];
+        return ListTile(
+          title: Text(task['title']),
+          subtitle: Text('Priority: ${task['priority']}'),
+        );
+      },
+    );
+  },
+);
+```
+
+**Key Points:**
+- Query results update in real-time
+- Only matching documents appear
+- No post-filtering needed
+
+### 8. Common Query Mistakes to Avoid
+
+**❌ Mistake 1: orderBy on unindexed field combinations**
+```dart
+.where('status', isEqualTo: 'active')
+.orderBy('createdAt')  // Requires composite index
+```
+
+**❌ Mistake 2: Too many filters**
+```dart
+.where('status', isEqualTo: 'active')
+.where('age', isGreaterThan: 18)
+.where('country', isEqualTo: 'US')
+.where('verified', isEqualTo: true)  // Getting complex!
+```
+
+**❌ Mistake 3: Querying unindexed fields**
+```dart
+.where('description', isEqualTo: 'something')  // Slow without index
+```
+
+**❌ Mistake 4: Not using limit()**
+```dart
+// ❌ Fetches 100,000 docs
+.collection('messages').snapshots()
+
+// ✅ Fetch only recent 50
+.orderBy('timestamp', descending: true).limit(50)
+```
+
+**❌ Mistake 5: Filtering in app code**
+```dart
+// ❌ Download all, filter in app
+final filtered = allDocs.where((d) => d['status'] == 'active').toList();
+
+// ✅ Filter at database level
+.where('status', isEqualTo: 'active')
+```
+
+### 9. Implementation in FirestoreQueriesDemo Screen
+
+The app includes a comprehensive query demo at `/firestore-queries` that showcases:
+
+**Interactive Features:**
+- ✅ **Filter Control**: Toggle between incomplete/completed tasks
+- ✅ **Sort Control**: Switch between ascending/descending  
+- ✅ **Limit Control**: Slider to adjust result limit (5-50)
+- ✅ **Real-Time Results**: StreamBuilder shows filtered/sorted results instantly
+- ✅ **Query Breakdown**: Visual display of current query structure
+
+**To Access:**
+```dart
+Navigator.pushNamed(context, '/firestore-queries');
+```
+
+### 10. Query Performance Tips
+
+**1. Always use indexes for where() + orderBy()**
+- Create index in Firebase Console
+- Then chain confidently
+
+**2. Limit early, paginate later**
+- Use `.limit(20)` not 1000
+- Implement pagination for next pages
+
+**3. Order by indexed fields**
+- Good: `createdAt`, `price`, `rating`
+- Avoid: `description`, `notes`
+
+**4. Combine related filters**
+- `status`, `whereIn: ['active', 'pending']` (one query)
+- Not separate queries for each status
+
+**5. Cache results locally**
+- Fetch once, reuse multiple times
+- Reduces Firebase reads/costs
+
+### 11. Code Implementation Summary
+
+**Key Files:**
+- [lib/screens/firestore_queries_demo.dart](lib/screens/firestore_queries_demo.dart) - Interactive demo
+- [lib/main.dart](lib/main.dart) - Route registration
+- [lib/services/firestore_service.dart](lib/services/firestore_service.dart) - Service methods
+
+**Service Integration:**
+```dart
+Query<Map<String, dynamic>> _buildQuery() {
+  Query<Map<String, dynamic>> query = _firestoreService.tasks;
+  query = query.where('isCompleted', isEqualTo: _filterCompleted);
+  query = query.orderBy('createdAt', descending: _sortDescending);
+  query = query.limit(_limitValue);
+  return query;
+}
+
+stream: _buildQuery().snapshots()
+```
+
+### 12. Query Examples by Use Case
+
+**Email Search:**
+```dart
+.where('email', isEqualTo: userEmail).get()
+```
+
+**Recent Posts (Last 10):**
+```dart
+.orderBy('timestamp', descending: true).limit(10).snapshots()
+```
+
+**Price Range:**
+```dart
+.where('price', isGreaterThanOrEqualTo: minPrice)
+.where('price', isLessThanOrEqualTo: maxPrice)
+.orderBy('price')
+```
+
+**Tagged Items:**
+```dart
+.where('tags', arrayContains: selectedTag)
+.orderBy('rating', descending: true)
+.limit(20)
+```
+
+### 13. Reflection: Queries in LibConnect
+
+**Without Queries (Inefficient):**
+- Download all 10,000 books
+- Filter in app code
+- Slow, memory-heavy
+
+**With Queries (Efficient):**
+```dart
+FirebaseFirestore.instance
+  .collection('books')
+  .where('availableCopies', isGreaterThan: 0)
+  .orderBy('rating', descending: true)
+  .limit(20)
+  .snapshots();
+```
+
+**Benefits:**
+- Load time: 5 sec → 500ms
+- Bandwidth: 10,000 books → 20 books
+- Cost: 10,000 reads → 20 reads
+- UX: Instant, snappy
+
+**Key Takeaway:** Firestore queries distribute filtering to the backend, reduce app complexity, and enable lightning-fast user experiences. Always filter at the database level!
