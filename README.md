@@ -4,11 +4,18 @@ Our team of three members is developing LibConnect, a Flutter and Firebase-based
 
 ## Google Maps Setup in Flutter
 
-### 1) Add Dependency
-Add this to `pubspec.yaml` dependencies:
+### 1) Why User Location & Markers Are Important
+- Enables real-time navigation and tracking.
+- Lets users see their current position on a map.
+- Allows apps to highlight important places with markers (stores, destinations, checkpoints).
+- Forms the base for route drawing, distance calculations, and area monitoring.
+
+### 2) Required Dependencies
 
 ```yaml
-google_maps_flutter: ^2.7.0
+dependencies:
+  google_maps_flutter: ^latest
+  geolocator: ^latest
 ```
 
 Run:
@@ -17,100 +24,115 @@ Run:
 flutter pub get
 ```
 
-### 2) Get a Google Maps API Key
-- Go to Google Cloud Console → APIs & Services → Credentials.
-- Enable APIs:
-  - Maps SDK for Android
-  - Maps SDK for iOS
-  - Geocoding API (optional)
-  - Places API (optional)
-- Create an API key and copy it.
+### 3) Requesting Location Permissions
+Before accessing GPS, permissions must be requested.
 
-### 3) Platform Configuration
-
-#### Android Setup
-Inside `android/app/src/main/AndroidManifest.xml`:
-
-```xml
-<meta-data
-    android:name="com.google.android.geo.API_KEY"
-    android:value="YOUR_API_KEY_HERE"/>
-```
-
-Add permission (for user location):
-
+#### Android Setup (`AndroidManifest.xml`)
 ```xml
 <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
 ```
 
-#### iOS Setup
-Inside `ios/Runner/AppDelegate.swift`:
-
-```swift
-GMSServices.provideAPIKey("YOUR_API_KEY_HERE")
-```
-
-Inside `ios/Runner/Info.plist`:
-
+#### iOS Setup (`Info.plist`)
 ```xml
 <key>NSLocationWhenInUseUsageDescription</key>
-<string>This app requires location access to display maps.</string>
+<string>This app requires location access to show your current position.</string>
 ```
 
-### 4) Displaying a Google Map in Flutter
-Minimal example:
+### 4) Getting the User’s Current Location
 
 ```dart
-class MapScreen extends StatelessWidget {
-  const MapScreen({super.key});
+Position position = await Geolocator.getCurrentPosition(
+  desiredAccuracy: LocationAccuracy.high,
+);
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(title: const Text("Google Map")),
-      body: const GoogleMap(
-        initialCameraPosition: CameraPosition(
-          target: LatLng(37.7749, -122.4194),
-          zoom: 12,
-        ),
-      ),
-    );
-  }
-}
+print("User location: ${position.latitude}, ${position.longitude}");
 ```
 
-### 5) Enabling User Location
+### 5) Displaying User Location on Google Map
 
 ```dart
 GoogleMap(
-  initialCameraPosition: const CameraPosition(
-    target: LatLng(0, 0),
-    zoom: 2,
+  initialCameraPosition: CameraPosition(
+    target: LatLng(position.latitude, position.longitude),
+    zoom: 15,
   ),
   myLocationEnabled: true,
   myLocationButtonEnabled: true,
 );
 ```
 
-Note: iOS requires location permission popup; Android requires declared permissions.
+This centers the map on the user’s live GPS position.
 
-### 6) Adding a Marker
+### 6) Adding a Marker on the Map
+Simple marker example:
+
+```dart
+Set<Marker> markers = {
+  Marker(
+    markerId: const MarkerId("currentLocation"),
+    position: LatLng(position.latitude, position.longitude),
+    infoWindow: const InfoWindow(title: "You are here"),
+  ),
+};
+```
+
+Using the marker in `GoogleMap`:
 
 ```dart
 GoogleMap(
-  initialCameraPosition: const CameraPosition(
-    target: LatLng(28.6139, 77.2090),
-    zoom: 12,
-  ),
-  markers: {
-    const Marker(
-      markerId: MarkerId("delhi"),
-      position: LatLng(28.6139, 77.2090),
-      infoWindow: InfoWindow(title: "Marker in Delhi"),
-    ),
-  },
+  initialCameraPosition: _cameraPosition,
+  markers: markers,
 );
 ```
+
+### 7) Adding a Custom Marker (PNG Icon)
+Step 1: Add PNG to `assets/` folder
+
+```text
+assets/location_pin.png
+```
+
+Update `pubspec.yaml`:
+
+```yaml
+assets:
+  - assets/location_pin.png
+```
+
+Step 2: Create `BitmapDescriptor`
+
+```dart
+final customIcon = await BitmapDescriptor.fromAssetImage(
+  const ImageConfiguration(size: Size(48, 48)),
+  'assets/location_pin.png',
+);
+```
+
+Step 3: Use it in marker
+
+```dart
+Marker(
+  markerId: const MarkerId("customPin"),
+  position: LatLng(position.latitude, position.longitude),
+  icon: customIcon,
+);
+```
+
+### 8) Updating Marker on Location Change (Live Tracking)
+
+```dart
+Geolocator.getPositionStream().listen((Position pos) {
+  setState(() {
+    userMarker = Marker(
+      markerId: const MarkerId('live'),
+      position: LatLng(pos.latitude, pos.longitude),
+    );
+  });
+});
+```
+
+This simulates real-time movement on the map.
 
 ---
 
