@@ -397,6 +397,114 @@ Use:
 - Perform backend validation even after frontend success.
 - Sanitize user input wherever possible.
 
+## Bottom Navigation in Flutter
+
+### 2) Basic Structure of a BottomNavigationBar
+A minimal setup requires:
+- A `Scaffold`
+- A `BottomNavigationBar`
+- A state variable to track the current index
+- A widget list representing different screens
+
+Example:
+
+```dart
+int _currentIndex = 0;
+
+final screens = [
+  HomeScreen(),
+  SearchScreen(),
+  ProfileScreen(),
+];
+```
+
+### 3) Implementing BottomNavigationBar
+
+```dart
+Scaffold(
+  body: screens[_currentIndex],
+  bottomNavigationBar: BottomNavigationBar(
+    currentIndex: _currentIndex,
+    onTap: (index) {
+      setState(() {
+        _currentIndex = index;
+      });
+    },
+    items: const [
+      BottomNavigationBarItem(icon: Icon(Icons.home), label: "Home"),
+      BottomNavigationBarItem(icon: Icon(Icons.search), label: "Search"),
+      BottomNavigationBarItem(icon: Icon(Icons.person), label: "Profile"),
+    ],
+  ),
+);
+```
+
+This updates the UI each time a tab is selected.
+
+### 4) Improving Navigation With PageView (Smooth & Faster)
+Using `PageController` gives better performance and swiping gestures:
+
+```dart
+PageController controller = PageController();
+
+PageView(
+  controller: controller,
+  children: screens,
+  onPageChanged: (index) {
+    setState(() => _currentIndex = index);
+  },
+);
+```
+
+Linking it with the bottom navigation:
+
+```dart
+onTap: (index) {
+  controller.animateToPage(
+    index,
+    duration: const Duration(milliseconds: 300),
+    curve: Curves.easeInOut,
+  );
+}
+```
+
+### 5) Adding State Preservation
+Avoid rebuilding screens on every tab switch:
+- Use `IndexedStack` to preserve UI
+- OR use `PageView` as above
+- Avoid calling `screens` inside `build()` directly
+
+Example:
+
+```dart
+body: IndexedStack(
+  index: _currentIndex,
+  children: screens,
+);
+```
+
+### 6) Adding Icons, Labels, and Themes
+Customizing:
+
+```dart
+BottomNavigationBar(
+  selectedItemColor: Colors.blue,
+  unselectedItemColor: Colors.grey,
+  showUnselectedLabels: false,
+);
+```
+
+You can also use:
+- `NavigationBar` (Material 3)
+- `NavigationRail` for tablets
+
+### 7) UX Best Practices
+- 3–5 tabs recommended.
+- Keep labels short ("Home", "Cart", "Profile").
+- Use consistent icons across your app.
+- Avoid placing destructive actions in navigation.
+- Keep each tab focused on a primary feature.
+
 ---
 
 ## Sprint 2 - Flutter and Dart Basics

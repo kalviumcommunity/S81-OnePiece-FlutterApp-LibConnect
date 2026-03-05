@@ -44,6 +44,12 @@ class HomeScreen extends StatelessWidget {
               icon: const Icon(Icons.fact_check),
               label: const Text('Form Validation Demo'),
             ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pushNamed(context, '/bottom-navigation'),
+              icon: const Icon(Icons.view_day),
+              label: const Text('Bottom Navigation Demo'),
+            ),
           ],
         ),
       ),
