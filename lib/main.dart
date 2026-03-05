@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:provider/provider.dart';
 import 'firebase_options.dart';
 import 'providers/counter_state.dart';
+import 'providers/theme_state.dart';
 import 'services/notification_service.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
@@ -33,11 +34,17 @@ void main() async {
   
   // Initialize Firebase Cloud Messaging
   await NotificationService().initialize();
+
+  final themeState = ThemeState();
+  await themeState.loadTheme();
   
   debugPrint('🚀 App launched successfully!');
   runApp(
-    ChangeNotifierProvider(
-      create: (_) => CounterState(),
+    MultiProvider(
+      providers: [
+        ChangeNotifierProvider(create: (_) => CounterState()),
+        ChangeNotifierProvider<ThemeState>.value(value: themeState),
+      ],
       child: const MyApp(),
     ),
   );
@@ -48,12 +55,41 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final lightTheme = ThemeData(
+      brightness: Brightness.light,
+      primaryColor: Colors.blue,
+      scaffoldBackgroundColor: Colors.white,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.blue,
+        foregroundColor: Colors.white,
+      ),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.blue,
+        brightness: Brightness.light,
+      ),
+      useMaterial3: true,
+    );
+
+    final darkTheme = ThemeData(
+      brightness: Brightness.dark,
+      primaryColor: Colors.teal,
+      scaffoldBackgroundColor: Colors.black,
+      appBarTheme: const AppBarTheme(
+        backgroundColor: Colors.black,
+        foregroundColor: Colors.tealAccent,
+      ),
+      colorScheme: ColorScheme.fromSeed(
+        seedColor: Colors.teal,
+        brightness: Brightness.dark,
+      ),
+      useMaterial3: true,
+    );
+
     return MaterialApp(
       title: 'Auth Flow Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-        useMaterial3: true,
-      ),
+      theme: lightTheme,
+      darkTheme: darkTheme,
+      themeMode: context.watch<ThemeState>().mode,
       debugShowCheckedModeBanner: false,
 
       home: StreamBuilder<User?>(
