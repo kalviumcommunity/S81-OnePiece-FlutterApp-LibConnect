@@ -18,10 +18,21 @@ class HomeScreen extends StatelessWidget {
           ),
         ],
       ),
-      body: const Center(
-        child: Text(
-          'You are logged in!',
-          style: TextStyle(fontSize: 22),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Text(
+              'You are logged in!',
+              style: TextStyle(fontSize: 22),
+            ),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pushNamed(context, '/google-maps'),
+              icon: const Icon(Icons.map),
+              label: const Text('Google Maps Demo'),
+            ),
+          ],
         ),
       ),
     );

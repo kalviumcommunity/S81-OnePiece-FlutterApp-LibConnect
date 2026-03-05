@@ -20,6 +20,7 @@ dependencies:
   
   # Media & File handling
   image_picker: ^1.0.0
+  google_maps_flutter: ^2.7.0
 
 flutter:
   uses-material-design: true

@@ -2,6 +2,116 @@
 
 Our team of three members is developing LibConnect, a Flutter and Firebase-based mobile application aimed at modernizing public library management. The problem we are addressing is that many public libraries still depend on manual registers to manage book availability and borrowing, making the process slow, inaccurate, and inconvenient for both readers and librarians. Our proposed solution, LibConnect, allows users to easily search, reserve, and track books in real time while providing librarians with tools to manage inventory digitally. The project’s goal is to build a fully functional MVP that demonstrates seamless Flutter-Firebase integration with an intuitive user interface and real-time data synchronization. The core features include user authentication (sign up, login, logout) using Firebase Auth, book discovery and reservation using Firestore, and a user dashboard to track borrowed or reserved books. We are using Flutter for the frontend, Firebase Firestore for database management, Firebase Auth for authentication, and GitHub Actions for CI/CD. Within our team, the UI/UX Lead is responsible for designing and developing the app’s interface and navigation flow, the Firebase & Backend Lead handles database configuration and integration, and the Testing & Deployment Lead manages app testing, builds, and deployment. The four-week sprint is structured as follows: Week 1 focuses on idea finalization, Firebase setup, and UI wireframes; Week 2 covers authentication and core functionality; Week 3 is for integration and testing of CRUD operations; and Week 4 involves UI polishing, bug fixing, and MVP deployment. The success of the sprint will be measured by delivering a stable, demo-ready APK that successfully integrates Firebase services, provides smooth user interaction, and receives positive feedback during review.
 
+## Google Maps Setup in Flutter
+
+### 1) Add Dependency
+Add this to `pubspec.yaml` dependencies:
+
+```yaml
+google_maps_flutter: ^2.7.0
+```
+
+Run:
+
+```bash
+flutter pub get
+```
+
+### 2) Get a Google Maps API Key
+- Go to Google Cloud Console → APIs & Services → Credentials.
+- Enable APIs:
+  - Maps SDK for Android
+  - Maps SDK for iOS
+  - Geocoding API (optional)
+  - Places API (optional)
+- Create an API key and copy it.
+
+### 3) Platform Configuration
+
+#### Android Setup
+Inside `android/app/src/main/AndroidManifest.xml`:
+
+```xml
+<meta-data
+    android:name="com.google.android.geo.API_KEY"
+    android:value="YOUR_API_KEY_HERE"/>
+```
+
+Add permission (for user location):
+
+```xml
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
+```
+
+#### iOS Setup
+Inside `ios/Runner/AppDelegate.swift`:
+
+```swift
+GMSServices.provideAPIKey("YOUR_API_KEY_HERE")
+```
+
+Inside `ios/Runner/Info.plist`:
+
+```xml
+<key>NSLocationWhenInUseUsageDescription</key>
+<string>This app requires location access to display maps.</string>
+```
+
+### 4) Displaying a Google Map in Flutter
+Minimal example:
+
+```dart
+class MapScreen extends StatelessWidget {
+  const MapScreen({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: const Text("Google Map")),
+      body: const GoogleMap(
+        initialCameraPosition: CameraPosition(
+          target: LatLng(37.7749, -122.4194),
+          zoom: 12,
+        ),
+      ),
+    );
+  }
+}
+```
+
+### 5) Enabling User Location
+
+```dart
+GoogleMap(
+  initialCameraPosition: const CameraPosition(
+    target: LatLng(0, 0),
+    zoom: 2,
+  ),
+  myLocationEnabled: true,
+  myLocationButtonEnabled: true,
+);
+```
+
+Note: iOS requires location permission popup; Android requires declared permissions.
+
+### 6) Adding a Marker
+
+```dart
+GoogleMap(
+  initialCameraPosition: const CameraPosition(
+    target: LatLng(28.6139, 77.2090),
+    zoom: 12,
+  ),
+  markers: {
+    const Marker(
+      markerId: MarkerId("delhi"),
+      position: LatLng(28.6139, 77.2090),
+      infoWindow: InfoWindow(title: "Marker in Delhi"),
+    ),
+  },
+);
+```
+
 ---
 
 ## Sprint 2 - Flutter and Dart Basics
