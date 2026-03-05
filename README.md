@@ -2,6 +2,82 @@
 
 Our team of three members is developing LibConnect, a Flutter and Firebase-based mobile application aimed at modernizing public library management. The problem we are addressing is that many public libraries still depend on manual registers to manage book availability and borrowing, making the process slow, inaccurate, and inconvenient for both readers and librarians. Our proposed solution, LibConnect, allows users to easily search, reserve, and track books in real time while providing librarians with tools to manage inventory digitally. The project’s goal is to build a fully functional MVP that demonstrates seamless Flutter-Firebase integration with an intuitive user interface and real-time data synchronization. The core features include user authentication (sign up, login, logout) using Firebase Auth, book discovery and reservation using Firestore, and a user dashboard to track borrowed or reserved books. We are using Flutter for the frontend, Firebase Firestore for database management, Firebase Auth for authentication, and GitHub Actions for CI/CD. Within our team, the UI/UX Lead is responsible for designing and developing the app’s interface and navigation flow, the Firebase & Backend Lead handles database configuration and integration, and the Testing & Deployment Lead manages app testing, builds, and deployment. The four-week sprint is structured as follows: Week 1 focuses on idea finalization, Firebase setup, and UI wireframes; Week 2 covers authentication and core functionality; Week 3 is for integration and testing of CRUD operations; and Week 4 involves UI polishing, bug fixing, and MVP deployment. The success of the sprint will be measured by delivering a stable, demo-ready APK that successfully integrates Firebase services, provides smooth user interaction, and receives positive feedback during review.
 
+## Running on Emulator and Physical Devices
+
+### 2) Setting Up an Emulator
+
+#### Android Emulator (Android Studio)
+- Open Android Studio → Device Manager
+- Click Create Virtual Device
+- Choose a device profile (Pixel 6, Pixel 4, etc.)
+- Select a system image (Android 12/13 recommended)
+- Launch the emulator and wait for boot
+
+Run app:
+
+```bash
+flutter run
+```
+
+#### iOS Simulator (macOS only)
+- Open Xcode → Open Developer Tools → Simulator
+- Choose device: iPhone 14, iPhone 12, etc.
+
+Run with:
+
+```bash
+flutter run -d ios
+```
+
+### 3) Setting Up a Physical Device
+
+#### Android Device Setup
+- Go to Settings → About Phone → Tap Build Number 7 times
+- Enable Developer Options
+- Turn on USB Debugging
+- Connect via USB cable
+- Approve the fingerprint prompt on the device
+
+Check if device is detected:
+
+```bash
+flutter devices
+```
+
+Run:
+
+```bash
+flutter run -d <device-id>
+```
+
+#### iOS Device Setup (macOS + Xcode)
+- Connect iPhone via USB
+- Trust the computer on device
+- Open project in Xcode
+- Sign the app (Apple ID required)
+
+Run using:
+
+```bash
+flutter run -d <device-id>
+```
+
+### 4) Testing Device-Specific Behaviors
+
+What to test on emulator:
+- Multiple screen sizes
+- Orientation changes
+- App lifecycle: minimize, reopen
+- Navigation flow
+- Form input
+
+What to test on physical devices:
+- Permissions (camera, location, notifications)
+- Internet connectivity variance
+- Performance & animations
+- Touch responsiveness
+- Firebase integrations (Auth, Firestore, FCM)
+
 ## Google Maps Setup in Flutter
 
 ### 1) Why User Location & Markers Are Important
