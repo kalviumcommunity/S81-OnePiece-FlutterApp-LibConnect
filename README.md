@@ -254,6 +254,149 @@ match /users/{uid}/items/{itemId} {
 }
 ```
 
+## Flutter Form Validation Guide
+
+### 2) Basic Form Structure in Flutter
+A form requires:
+- A `Form` widget
+- A `GlobalKey<FormState>`
+- Multiple `TextFormField` widgets
+- Validators to handle input checks
+
+Example structure:
+
+```dart
+final _formKey = GlobalKey<FormState>();
+
+Form(
+  key: _formKey,
+  child: Column(
+    children: [
+      TextFormField(),
+      TextFormField(),
+      ElevatedButton(
+        onPressed: () {
+          if (_formKey.currentState!.validate()) {
+            print("Form is valid");
+          }
+        },
+        child: Text("Submit"),
+      )
+    ],
+  ),
+);
+```
+
+### 3) Adding Validators to Fields
+Built-in basic validator:
+
+```dart
+validator: (value) {
+  if (value == null || value.isEmpty) {
+    return "This field is required";
+  }
+  return null;
+}
+```
+
+### 4) Validating Common Form Inputs
+Email validation:
+
+```dart
+validator: (value) {
+  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+$');
+  if (!emailRegex.hasMatch(value ?? "")) {
+    return "Enter a valid email address";
+  }
+  return null;
+}
+```
+
+Password validation:
+
+```dart
+validator: (value) {
+  if ((value ?? "").length < 8) {
+    return "Password must be at least 8 characters";
+  }
+  return null;
+}
+```
+
+Phone number validation:
+
+```dart
+validator: (value) {
+  final phoneRegex = RegExp(r'^[0-9]{10}$');
+  if (!phoneRegex.hasMatch(value ?? "")) {
+    return "Enter a valid 10-digit phone number";
+  }
+  return null;
+}
+```
+
+### 5) Multi-Field Cross Validation
+Some validations depend on multiple fields, such as confirming a password.
+
+```dart
+String? password;
+String? confirmPassword;
+
+TextFormField(
+  onChanged: (v) => password = v,
+);
+
+TextFormField(
+  validator: (v) {
+    if (v != password) {
+      return "Passwords do not match";
+    }
+    return null;
+  },
+);
+```
+
+### 6) Showing Error Messages
+Flutter automatically displays validator messages below the field.
+
+To show messages on submit:
+
+```dart
+if (!_formKey.currentState!.validate()) {
+  // Form has errors
+}
+```
+
+### 7) Disabling Submit Button for Invalid Forms
+Common UX enhancement:
+
+```dart
+bool isValid = _formKey.currentState?.validate() ?? false;
+
+ElevatedButton(
+  onPressed: isValid ? submitForm : null,
+  child: Text("Submit"),
+);
+```
+
+### 8) Complex Forms With Multiple Sections
+Examples:
+- Shipping address + payment details
+- Multi-step onboarding
+- Dynamic form fields based on user choices
+
+Use:
+- `Stepper` widget
+- Separate `Form` widgets per section
+- Combined validation before final submit
+
+### 9) Best Practices
+- Validate on user input for immediate feedback.
+- Use input formatters for phone, card numbers, etc.
+- Avoid long forms—use multiple steps or collapsible UI.
+- Perform backend validation even after frontend success.
+- Sanitize user input wherever possible.
+
 ---
 
 ## Sprint 2 - Flutter and Dart Basics
