@@ -1,6 +1,7 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'dart:developer' as developer;
 
 class UserItemsCrudDemo extends StatefulWidget {
   const UserItemsCrudDemo({super.key});
@@ -14,6 +15,13 @@ class _UserItemsCrudDemoState extends State<UserItemsCrudDemo> {
   final TextEditingController _descriptionController = TextEditingController();
 
   bool _isSubmitting = false;
+  late Future<int> _itemCountFuture;
+
+  @override
+  void initState() {
+    super.initState();
+    _itemCountFuture = _loadItemCount();
+  }
 
   String get _uid {
     final user = FirebaseAuth.instance.currentUser;
@@ -28,6 +36,26 @@ class _UserItemsCrudDemoState extends State<UserItemsCrudDemo> {
       .collection('users')
       .doc(_uid)
       .collection('items');
+
+  Future<int> _loadItemCount() async {
+    try {
+      final snapshot = await _items.get();
+      return snapshot.docs.length;
+    } catch (error, stackTrace) {
+      developer.log(
+        'Error loading item count: $error',
+        name: 'UserItemsCrudDemo',
+        stackTrace: stackTrace,
+      );
+      rethrow;
+    }
+  }
+
+  void _retryLoadCount() {
+    setState(() {
+      _itemCountFuture = _loadItemCount();
+    });
+  }
 
   Future<void> _createItem() async {
     final title = _titleController.text.trim();
@@ -56,10 +84,16 @@ class _UserItemsCrudDemoState extends State<UserItemsCrudDemo> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Item created successfully.')),
       );
+
+      _retryLoadCount();
     } catch (error) {
+      developer.log(
+        'Error creating item: $error',
+        name: 'UserItemsCrudDemo',
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Create failed: $error')),
+        const SnackBar(content: Text('Could not create item. Please try again.')),
       );
     } finally {
       if (mounted) {
@@ -124,10 +158,16 @@ class _UserItemsCrudDemoState extends State<UserItemsCrudDemo> {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Item updated successfully.')),
                   );
+
+                  _retryLoadCount();
                 } catch (error) {
+                  developer.log(
+                    'Error updating item: $error',
+                    name: 'UserItemsCrudDemo',
+                  );
                   if (!mounted) return;
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Update failed: $error')),
+                    const SnackBar(content: Text('Could not update item. Please retry.')),
                   );
                 }
               },
@@ -149,12 +189,106 @@ class _UserItemsCrudDemoState extends State<UserItemsCrudDemo> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Item deleted.')),
       );
+
+      _retryLoadCount();
     } catch (error) {
+      developer.log(
+        'Error deleting item: $error',
+        name: 'UserItemsCrudDemo',
+      );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Delete failed: $error')),
+        const SnackBar(content: Text('Could not delete item. Please retry.')),
       );
     }
+  }
+
+  Widget _buildFutureSummary() {
+    return FutureBuilder<int>(
+      future: _itemCountFuture,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          return const Padding(
+            padding: EdgeInsets.symmetric(vertical: 20),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
+
+        if (snapshot.hasError) {
+          return Center(
+            child: Column(
+              children: [
+                const Text('Failed to load summary.'),
+                const SizedBox(height: 8),
+                ElevatedButton(
+                  onPressed: _retryLoadCount,
+                  child: const Text('Retry'),
+                ),
+              ],
+            ),
+          );
+        }
+
+        return Card(
+          child: ListTile(
+            leading: const Icon(Icons.data_usage),
+            title: const Text('Total items (one-time load)'),
+            subtitle: Text('${snapshot.data ?? 0} item(s)'),
+            trailing: IconButton(
+              icon: const Icon(Icons.refresh),
+              onPressed: _retryLoadCount,
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildStreamLoadingState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          CircularProgressIndicator(),
+          SizedBox(height: 12),
+          Text('Loading your items...'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStreamErrorState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(Icons.error_outline, size: 42, color: Colors.redAccent),
+          const SizedBox(height: 8),
+          const Text('Something went wrong while loading items.'),
+          const SizedBox(height: 8),
+          ElevatedButton(
+            onPressed: () => setState(() {}),
+            child: const Text('Retry'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildStreamEmptyState() {
+    return const Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.inbox_outlined, size: 44, color: Colors.grey),
+          SizedBox(height: 8),
+          Text(
+            'No items yet.\nTap + to create your first one!',
+            textAlign: TextAlign.center,
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -178,10 +312,16 @@ class _UserItemsCrudDemoState extends State<UserItemsCrudDemo> {
               )
             : const Icon(Icons.add),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(12),
-        child: Column(
-          children: [
+      body: AbsorbPointer(
+        absorbing: _isSubmitting,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Column(
+            children: [
+              if (_isSubmitting)
+                const LinearProgressIndicator(),
+              if (_isSubmitting)
+                const SizedBox(height: 8),
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
@@ -200,23 +340,27 @@ class _UserItemsCrudDemoState extends State<UserItemsCrudDemo> {
               maxLines: 3,
             ),
             const SizedBox(height: 12),
+            _buildFutureSummary(),
+            const SizedBox(height: 8),
             Expanded(
               child: StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
                 stream: _items.orderBy('createdAt', descending: true).snapshots(),
                 builder: (context, snapshot) {
                   if (snapshot.connectionState == ConnectionState.waiting) {
-                    return const Center(child: CircularProgressIndicator());
+                    return _buildStreamLoadingState();
                   }
 
                   if (snapshot.hasError) {
-                    return Center(
-                      child: Text('Error loading items: ${snapshot.error}'),
+                    developer.log(
+                      'Stream error while loading items: ${snapshot.error}',
+                      name: 'UserItemsCrudDemo',
                     );
+                    return _buildStreamErrorState();
                   }
 
                   final docs = snapshot.data?.docs ?? [];
                   if (docs.isEmpty) {
-                    return const Center(child: Text('No items yet. Add one above.'));
+                    return _buildStreamEmptyState();
                   }
 
                   return ListView.builder(
@@ -243,7 +387,8 @@ class _UserItemsCrudDemoState extends State<UserItemsCrudDemo> {
                 },
               ),
             ),
-          ],
+            ],
+          ),
         ),
       ),
     );

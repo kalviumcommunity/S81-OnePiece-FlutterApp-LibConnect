@@ -622,6 +622,144 @@ Dynamic color adapts to:
 - Device system palette
 - Material You design principles
 
+## Loading, Empty, and Error States in Flutter
+
+### 2) Displaying a Loader (Loading State)
+Loaders communicate progress.
+
+Circular loader example:
+
+```dart
+Center(
+  child: CircularProgressIndicator(),
+);
+```
+
+For asynchronous operations:
+
+```dart
+FutureBuilder(
+  future: fetchData(),
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    // handle other states below
+  },
+);
+```
+
+### 3) Displaying an Empty State
+Empty states are shown when data exists but has no entries.
+
+```dart
+if (items.isEmpty) {
+  return const Center(
+    child: Text(
+      "No items yet.\nTap + to create your first one!",
+      textAlign: TextAlign.center,
+    ),
+  );
+}
+```
+
+Best practices:
+- Provide instructions ("Pull to refresh", "Add new item", etc.)
+- Use illustrations (empty box icons)
+- Avoid blank screens
+
+### 4) Handling Errors Gracefully
+Errors must be user-friendly, not technical.
+
+Example error UI:
+
+```dart
+Center(
+  child: Column(
+    mainAxisAlignment: MainAxisAlignment.center,
+    children: [
+      const Text("Something went wrong."),
+      const SizedBox(height: 8),
+      ElevatedButton(
+        onPressed: retryFunction,
+        child: const Text("Retry"),
+      ),
+    ],
+  ),
+);
+```
+
+Using `FutureBuilder`:
+
+```dart
+if (snapshot.hasError) {
+  return ErrorWidget("Failed to load data");
+}
+```
+
+For production apps, avoid exposing raw exceptions.
+
+### 5) StreamBuilder Handling
+Firestore and realtime data streams require careful state handling:
+
+```dart
+StreamBuilder(
+  stream: itemsStream,
+  builder: (context, snapshot) {
+    if (snapshot.connectionState == ConnectionState.waiting)
+      return const Center(child: CircularProgressIndicator());
+
+    if (snapshot.hasError)
+      return const Center(child: Text("Error loading data"));
+
+    if (!snapshot.hasData || snapshot.data!.isEmpty)
+      return const Center(child: Text("No items found"));
+
+    // Render items list here
+  },
+);
+```
+
+### 6) Custom Animated Loaders (Optional but Polished)
+Use packages:
+- `lottie`
+- `loading_animation_widget`
+
+Example:
+
+```dart
+Lottie.asset("assets/loading.json");
+```
+
+### 7) Graceful Error Logging (Developer-Side)
+
+```dart
+try {
+  await someService.loadData();
+} catch (e, st) {
+  log("Error loading data: $e");
+  log("StackTrace: $st");
+}
+```
+
+Never show stack traces to the user.
+
+### 8) Visual Examples of Good UX Patterns
+Good loading UX:
+- Spinner at center
+- Skeleton loaders / shimmer
+- Disable UI while loading
+
+Good error UX:
+- Friendly message
+- Retry button
+- Optional illustration
+
+Good empty UX:
+- Clean screen
+- Helpful text
+- CTA like "Add first item"
+
 ---
 
 ## Sprint 2 - Flutter and Dart Basics
