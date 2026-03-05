@@ -32,6 +32,12 @@ class HomeScreen extends StatelessWidget {
               icon: const Icon(Icons.map),
               label: const Text('Google Maps Demo'),
             ),
+            const SizedBox(height: 12),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pushNamed(context, '/user-items-crud'),
+              icon: const Icon(Icons.edit_note),
+              label: const Text('User CRUD Demo'),
+            ),
           ],
         ),
       ),

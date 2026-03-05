@@ -134,6 +134,126 @@ Geolocator.getPositionStream().listen((Position pos) {
 
 This simulates real-time movement on the map.
 
+## Firestore CRUD with Firebase Auth
+
+### 1) Why CRUD Matters in Mobile Apps
+- Forms the foundation for apps like notes, tasks, diaries, shopping lists, chats, and dashboards.
+- Allows user-specific data storage with authentication.
+- Demonstrates interaction between UI components, Firestore collections, and Firebase Auth.
+- Helps organize real-time syncing and dynamic UI updates.
+
+### 2) Firebase Setup Requirements
+Ensure you have:
+- Email/Password Authentication enabled
+- A Firestore database in production mode
+- Users signed in before performing CRUD operations
+
+### 3) Data Model Example
+Each user stores data under:
+
+```text
+/users/{uid}/items/{itemId}
+```
+
+Sample item:
+
+```json
+{
+  "title": "My first item",
+  "description": "This is a demo entry.",
+  "createdAt": 1700000000000
+}
+```
+
+### 4) Create Operation (C)
+
+```dart
+final uid = FirebaseAuth.instance.currentUser!.uid;
+final items = FirebaseFirestore.instance.collection('users').doc(uid).collection('items');
+
+Future<void> createItem(String title, String desc) async {
+  await items.add({
+    'title': title,
+    'description': desc,
+    'createdAt': DateTime.now().millisecondsSinceEpoch,
+  });
+}
+```
+
+### 5) Read Operation (R)
+Displaying items in the UI using a `StreamBuilder`:
+
+```dart
+StreamBuilder(
+  stream: items.orderBy('createdAt', descending: true).snapshots(),
+  builder: (context, snapshot) {
+    if (!snapshot.hasData) return const CircularProgressIndicator();
+    final docs = snapshot.data!.docs;
+
+    return ListView.builder(
+      itemCount: docs.length,
+      itemBuilder: (_, i) {
+        final item = docs[i].data();
+        return ListTile(
+          title: Text(item['title']),
+          subtitle: Text(item['description']),
+        );
+      },
+    );
+  },
+);
+```
+
+This ensures the UI updates automatically when Firestore changes.
+
+### 6) Update Operation (U)
+
+```dart
+Future<void> updateItem(String id, String newTitle) async {
+  await items.doc(id).update({
+    'title': newTitle,
+    'updatedAt': DateTime.now().millisecondsSinceEpoch,
+  });
+}
+```
+
+### 7) Delete Operation (D)
+
+```dart
+Future<void> deleteItem(String id) async {
+  await items.doc(id).delete();
+}
+```
+
+### 8) UI Flow Example
+Your CRUD UI typically includes:
+- A text field to create a new item
+- A list view to read items
+- A tap action or dialog to update an item
+- A delete icon to remove an item
+
+Example UI layout:
+
+```dart
+Scaffold(
+  appBar: AppBar(title: const Text("My Items")),
+  floatingActionButton: FloatingActionButton(
+    onPressed: () => openCreateDialog(),
+    child: const Icon(Icons.add),
+  ),
+  body: ItemsListView(), // your StreamBuilder widget
+);
+```
+
+### 9) Securing CRUD with Firestore Rules
+Rules ensure each user can only access their own items:
+
+```text
+match /users/{uid}/items/{itemId} {
+  allow read, write: if request.auth.uid == uid;
+}
+```
+
 ---
 
 ## Sprint 2 - Flutter and Dart Basics

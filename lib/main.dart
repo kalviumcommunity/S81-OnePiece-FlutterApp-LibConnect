@@ -19,6 +19,7 @@ import 'screens/cloud_functions_demo.dart';
 import 'screens/notifications_demo.dart';
 import 'screens/firestore_security_demo.dart';
 import 'screens/map_screen.dart';
+import 'screens/user_items_crud_demo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,6 +80,7 @@ class MyApp extends StatelessWidget {
         '/notifications': (context) => const NotificationsDemoScreen(),
         '/firestore-security': (context) => const FirestoreSecurityDemoScreen(),
         '/google-maps': (context) => const MapScreen(),
+        '/user-items-crud': (context) => const UserItemsCrudDemo(),
       },
       
       // Handle unknown routes
