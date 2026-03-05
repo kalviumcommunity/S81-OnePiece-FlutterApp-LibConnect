@@ -23,6 +23,7 @@ import 'screens/firestore_security_demo.dart';
 import 'screens/map_screen.dart';
 import 'screens/user_items_crud_demo.dart';
 import 'screens/user_input_form.dart';
+import 'screens/bottom_navigation_demo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -90,6 +91,7 @@ class MyApp extends StatelessWidget {
         '/google-maps': (context) => const MapScreen(),
         '/user-items-crud': (context) => const UserItemsCrudDemo(),
         '/form-validation': (context) => const UserInputForm(),
+        '/bottom-navigation': (context) => const BottomNavigationDemo(),
       },
       
       // Handle unknown routes
