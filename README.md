@@ -505,6 +505,123 @@ You can also use:
 - Avoid placing destructive actions in navigation.
 - Keep each tab focused on a primary feature.
 
+## Theming in Flutter
+
+### 2) Setting Up Basic Theming in Flutter
+Flutter apps define themes inside `MaterialApp`.
+
+```dart
+MaterialApp(
+  theme: ThemeData.light(),
+  darkTheme: ThemeData.dark(),
+  themeMode: ThemeMode.system,
+  home: const HomeScreen(),
+);
+```
+
+ThemeMode options:
+- `ThemeMode.system` – follows device settings
+- `ThemeMode.light` – force light mode
+- `ThemeMode.dark` – force dark mode
+
+### 3) Creating Custom Light & Dark Themes
+Light theme example:
+
+```dart
+final lightTheme = ThemeData(
+  brightness: Brightness.light,
+  primaryColor: Colors.blue,
+  scaffoldBackgroundColor: Colors.white,
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Colors.blue,
+    foregroundColor: Colors.white,
+  ),
+);
+```
+
+Dark theme example:
+
+```dart
+final darkTheme = ThemeData(
+  brightness: Brightness.dark,
+  primaryColor: Colors.teal,
+  scaffoldBackgroundColor: Colors.black,
+  appBarTheme: const AppBarTheme(
+    backgroundColor: Colors.black,
+    foregroundColor: Colors.tealAccent,
+  ),
+);
+```
+
+### 4) Dynamic Theme Switching (Using Provider/Riverpod)
+State class example (Provider):
+
+```dart
+class ThemeState with ChangeNotifier {
+  ThemeMode mode = ThemeMode.system;
+
+  void toggleTheme(bool isDark) {
+    mode = isDark ? ThemeMode.dark : ThemeMode.light;
+    notifyListeners();
+  }
+}
+```
+
+Applying it in `MaterialApp`:
+
+```dart
+MaterialApp(
+  theme: lightTheme,
+  darkTheme: darkTheme,
+  themeMode: context.watch<ThemeState>().mode,
+);
+```
+
+### 5) Theme Toggle UI
+
+```dart
+Switch(
+  value: context.watch<ThemeState>().mode == ThemeMode.dark,
+  onChanged: (value) {
+    context.read<ThemeState>().toggleTheme(value);
+  },
+);
+```
+
+This allows instant theme switching inside the app.
+
+### 6) Persisting Theme Selection (Optional but Recommended)
+Using SharedPreferences:
+
+```dart
+final prefs = await SharedPreferences.getInstance();
+await prefs.setBool("isDark", value);
+```
+
+Load saved theme:
+
+```dart
+final isDark = prefs.getBool("isDark") ?? false;
+themeState.toggleTheme(isDark);
+```
+
+### 7) Dynamic Colors (Material You – Android 12+)
+Flutter supports Material 3 dynamic colors:
+
+```dart
+MaterialApp(
+  theme: ThemeData(
+    colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
+    useMaterial3: true,
+  ),
+);
+```
+
+Dynamic color adapts to:
+- User wallpaper
+- Device system palette
+- Material You design principles
+
 ---
 
 ## Sprint 2 - Flutter and Dart Basics

@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
+
+import '../providers/theme_state.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -7,11 +10,37 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final user = FirebaseAuth.instance.currentUser;
+    final themeState = context.watch<ThemeState>();
+    final isDarkMode = themeState.mode == ThemeMode.dark;
 
     return Scaffold(
       appBar: AppBar(
         title: Text('Welcome, ${user?.email ?? 'User'}'),
         actions: [
+          Switch(
+            value: isDarkMode,
+            onChanged: (value) {
+              context.read<ThemeState>().toggleTheme(value);
+            },
+          ),
+          PopupMenuButton<String>(
+            tooltip: 'Theme mode',
+            onSelected: (value) {
+              if (value == 'system') {
+                context.read<ThemeState>().setSystemTheme();
+              } else if (value == 'light') {
+                context.read<ThemeState>().toggleTheme(false);
+              } else {
+                context.read<ThemeState>().toggleTheme(true);
+              }
+            },
+            itemBuilder: (context) => const [
+              PopupMenuItem(value: 'system', child: Text('System theme')),
+              PopupMenuItem(value: 'light', child: Text('Light theme')),
+              PopupMenuItem(value: 'dark', child: Text('Dark theme')),
+            ],
+            icon: const Icon(Icons.palette_outlined),
+          ),
           IconButton(
             icon: const Icon(Icons.logout),
             onPressed: () => FirebaseAuth.instance.signOut(),
