@@ -2,6 +2,129 @@
 
 Our team of three members is developing LibConnect, a Flutter and Firebase-based mobile application aimed at modernizing public library management. The problem we are addressing is that many public libraries still depend on manual registers to manage book availability and borrowing, making the process slow, inaccurate, and inconvenient for both readers and librarians. Our proposed solution, LibConnect, allows users to easily search, reserve, and track books in real time while providing librarians with tools to manage inventory digitally. The project’s goal is to build a fully functional MVP that demonstrates seamless Flutter-Firebase integration with an intuitive user interface and real-time data synchronization. The core features include user authentication (sign up, login, logout) using Firebase Auth, book discovery and reservation using Firestore, and a user dashboard to track borrowed or reserved books. We are using Flutter for the frontend, Firebase Firestore for database management, Firebase Auth for authentication, and GitHub Actions for CI/CD. Within our team, the UI/UX Lead is responsible for designing and developing the app’s interface and navigation flow, the Firebase & Backend Lead handles database configuration and integration, and the Testing & Deployment Lead manages app testing, builds, and deployment. The four-week sprint is structured as follows: Week 1 focuses on idea finalization, Firebase setup, and UI wireframes; Week 2 covers authentication and core functionality; Week 3 is for integration and testing of CRUD operations; and Week 4 involves UI polishing, bug fixing, and MVP deployment. The success of the sprint will be measured by delivering a stable, demo-ready APK that successfully integrates Firebase services, provides smooth user interaction, and receives positive feedback during review.
 
+## Sprint #2 Final Submission Guide
+
+### 1) Plan and Structure Your Final Application
+Before submitting, ensure your app meets standards covered in all Sprint #2 modules.
+
+| Module | What to Include |
+|---|---|
+| UI & Screens | Responsive layouts, navigation (BottomNavigationBar), theme support |
+| State Management (Provider/Riverpod) | Reactive state across screens, scalable architecture |
+| Authentication | Login, signup, session handling, route protection |
+| Firebase Firestore | CRUD operations, user-specific collections, real-time listeners |
+| Push Notifications (FCM) | Token retrieval, message handlers, foreground/background delivery |
+| Maps & Location | Google Maps SDK, markers, live location access |
+| Form Validation | Complex forms with field-level validation and error handling |
+| Error/Loader/Empty States | Clean UX responses for all async states |
+| Theming | Light/Dark mode toggle, dynamic colors |
+| Release Build | Signed Release APK/AAB generated |
+
+### 2) Build and Refine Your Flutter App
+Recommended structure:
+
+```text
+lib/
+ ┣ screens/
+ ┣ widgets/
+ ┣ providers/ or riverpod/
+ ┣ services/
+ ┣ models/
+ ┣ utils/
+ ┣ themes/
+ ┗ main.dart
+```
+
+Final checks before submission:
+- All logic modules separated cleanly
+- API keys stored securely using environment configs or runtime variables
+- User flows fully functional end-to-end
+- Navigation smooth across all screens
+- Firestore queries properly optimized
+- FCM notifications tested in all states
+- Forms validated; errors handled gracefully
+- Theme toggle working across entire app
+- Repository easy to run with minimal setup steps
+
+### 3) Prepare a Production Release Build
+Your final app must include:
+- A signed Release APK or Release AAB
+- A build that runs correctly on a physical device
+
+Include screenshots of:
+- Release build generation
+- Successful installation on a device
+- Firebase console logs (optional)
+- Push notification tests
+
+### 4) Documentation Requirements
+README.md should demonstrate a production-ready mobile engineering project.
+
+#### A. Project Overview
+- Problem statement
+- Target users
+- Key workflows and features
+- High-level app summary
+
+#### B. Setup Instructions
+- How to clone and run the project
+- Required environment configurations
+- Steps to generate or run the release build
+
+#### C. Architecture Details
+- Folder structure explanation
+- State management design
+- Firebase integrations (Auth, Firestore, FCM, Storage if used)
+- Data model descriptions
+
+#### D. Feature Walkthrough (with screenshots)
+- Login
+- CRUD
+- Notifications
+- Maps
+- Theming
+- Navigation
+- Error/Loader states
+
+#### E. Testing and Verification
+- Device testing summary
+- Emulator testing
+- Release build installation screenshot
+- Optional test cases
+
+#### F. Reflections
+Discuss:
+- The hardest technical challenge solved
+- Biggest learning during Flutter development
+- What to improve next
+- How Sprint #2 boosted engineering confidence
+
+### 5) Quality Checklist Before Submission
+
+| Category | Checklist |
+|---|---|
+| Functionality | All screens, forms, and Firebase features work properly |
+| UI/UX | Smooth navigation, clean design, proper spacing and theming |
+| State Handling | Provider/Riverpod works across all screens |
+| Firestore | No unauthorized access; user-specific data only |
+| Notifications | FCM tested in foreground, background, terminated |
+| Location/Maps | Permissions work; markers and user location shown |
+| Forms | All validations present and accurate |
+| Error Handling | Loaders, empty states, error widgets implemented |
+| Release Build | Signed build generated and tested on device |
+| Documentation | README + architecture + screenshots + reflections included |
+| Version Control | Clean commits, meaningful PRs, organized branches |
+
+### 6) Final Deliverables (Submit All Four)
+Each student must submit all four required deliverables.
+
+| Deliverable | Description |
+|---|---|
+| 1. Release Build File | Signed APK/AAB uploaded to Drive (Anyone with link → view or edit) |
+| 2. Video Demo (Drive Link) | 2–3 minute walkthrough showing key features, architecture, Firebase integrations, and release build installation |
+| 3. GitHub Repository | Full codebase with documentation, architecture diagrams, and clean commits |
+| 4. Reflection Post (LinkedIn) | Share your Sprint #2 journey: what you built, challenges, learnings, and tag #KalviumSimulatedWork |
+
 ## Running on Emulator and Physical Devices
 
 ### 2) Setting Up an Emulator
