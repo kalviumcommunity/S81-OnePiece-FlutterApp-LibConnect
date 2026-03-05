@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:provider/provider.dart';
 import 'firebase_options.dart';
+import 'providers/counter_state.dart';
 import 'services/notification_service.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
@@ -31,7 +33,12 @@ void main() async {
   await NotificationService().initialize();
   
   debugPrint('🚀 App launched successfully!');
-  runApp(const MyApp());
+  runApp(
+    ChangeNotifierProvider(
+      create: (_) => CounterState(),
+      child: const MyApp(),
+    ),
+  );
 }
 
 class MyApp extends StatelessWidget {
