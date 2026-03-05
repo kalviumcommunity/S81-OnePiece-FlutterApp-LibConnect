@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'firebase_options.dart';
+import 'services/notification_service.dart';
 import 'screens/auth_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/hot_reload_demo.dart';
@@ -15,12 +16,17 @@ import 'screens/firestore_realtime_demo.dart';
 import 'screens/firestore_queries_demo.dart';
 import 'screens/firebase_storage_demo.dart';
 import 'screens/cloud_functions_demo.dart';
+import 'screens/notifications_demo.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+  
+  // Initialize Firebase Cloud Messaging
+  await NotificationService().initialize();
+  
   debugPrint('🚀 App launched successfully!');
   runApp(const MyApp());
 }
@@ -68,6 +74,7 @@ class MyApp extends StatelessWidget {
         '/firestore-queries': (context) => const FirestoreQueriesDemo(),
         '/firebase-storage': (context) => const FirebaseStorageDemo(),
         '/firebase-cloud-functions': (context) => const CloudFunctionsDemo(),
+        '/notifications': (context) => const NotificationsDemoScreen(),
       },
       
       // Handle unknown routes
