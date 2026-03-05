@@ -18,6 +18,7 @@ import 'screens/firebase_storage_demo.dart';
 import 'screens/cloud_functions_demo.dart';
 import 'screens/notifications_demo.dart';
 import 'screens/firestore_security_demo.dart';
+import 'screens/map_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -77,6 +78,7 @@ class MyApp extends StatelessWidget {
         '/firebase-cloud-functions': (context) => const CloudFunctionsDemo(),
         '/notifications': (context) => const NotificationsDemoScreen(),
         '/firestore-security': (context) => const FirestoreSecurityDemoScreen(),
+        '/google-maps': (context) => const MapScreen(),
       },
       
       // Handle unknown routes
