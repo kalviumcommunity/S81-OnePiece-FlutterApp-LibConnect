@@ -1,46 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-class StateManagementDemo extends StatefulWidget {
-  @override
-  _StateManagementDemoState createState() => _StateManagementDemoState();
-}
+import '../providers/counter_state.dart';
 
-class _StateManagementDemoState extends State<StateManagementDemo> {
-  int _counter = 0;
-  bool _isEven = true;
-
-  void _incrementCounter() {
-    setState(() {
-      _counter++;
-      _isEven = _counter % 2 == 0;
-    });
-  }
-
-  void _decrementCounter() {
-    setState(() {
-      if (_counter > 0) {
-        _counter--;
-        _isEven = _counter % 2 == 0;
-      }
-    });
-  }
-
-  void _resetCounter() {
-    setState(() {
-      _counter = 0;
-      _isEven = true;
-    });
-  }
+class StateManagementDemo extends StatelessWidget {
+  const StateManagementDemo({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final counter = context.watch<CounterState>();
+
     return Scaffold(
       appBar: AppBar(
         title: const Text('State Management Demo'),
         elevation: 0,
       ),
       body: Container(
-        color: _counter >= 5 ? Colors.greenAccent.withOpacity(0.1) : Colors.white,
+        color: counter.count >= 5 ? Colors.greenAccent.withOpacity(0.1) : Colors.white,
         child: Center(
           child: SingleChildScrollView(
             child: Column(
@@ -62,7 +38,7 @@ class _StateManagementDemoState extends State<StateManagementDemo> {
                     ),
                   ),
                   child: Text(
-                    '$_counter times',
+                    'Count: ${counter.count}',
                     style: const TextStyle(
                       fontSize: 48,
                       fontWeight: FontWeight.bold,
@@ -74,15 +50,17 @@ class _StateManagementDemoState extends State<StateManagementDemo> {
                 Container(
                   padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
-                    color: _isEven ? Colors.green.withOpacity(0.1) : Colors.orange.withOpacity(0.1),
+                    color: counter.isEven
+                        ? Colors.green.withOpacity(0.1)
+                        : Colors.orange.withOpacity(0.1),
                     borderRadius: BorderRadius.circular(8),
                   ),
                   child: Text(
-                    _isEven ? 'The number is EVEN ✓' : 'The number is ODD ✗',
+                    counter.isEven ? 'The number is EVEN ✓' : 'The number is ODD ✗',
                     style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w600,
-                      color: _isEven ? Colors.green : Colors.orange,
+                      color: counter.isEven ? Colors.green : Colors.orange,
                     ),
                   ),
                 ),
@@ -91,7 +69,7 @@ class _StateManagementDemoState extends State<StateManagementDemo> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     ElevatedButton.icon(
-                      onPressed: _decrementCounter,
+                      onPressed: () => context.read<CounterState>().decrement(),
                       icon: const Icon(Icons.remove),
                       label: const Text('Decrement'),
                       style: ElevatedButton.styleFrom(
@@ -105,7 +83,7 @@ class _StateManagementDemoState extends State<StateManagementDemo> {
                     ),
                     const SizedBox(width: 16),
                     ElevatedButton.icon(
-                      onPressed: _incrementCounter,
+                      onPressed: () => context.read<CounterState>().increment(),
                       icon: const Icon(Icons.add),
                       label: const Text('Increment'),
                       style: ElevatedButton.styleFrom(
@@ -121,7 +99,7 @@ class _StateManagementDemoState extends State<StateManagementDemo> {
                 ),
                 const SizedBox(height: 16),
                 ElevatedButton.icon(
-                  onPressed: _resetCounter,
+                  onPressed: () => context.read<CounterState>().reset(),
                   icon: const Icon(Icons.refresh),
                   label: const Text('Reset'),
                   style: ElevatedButton.styleFrom(
@@ -146,9 +124,9 @@ class _StateManagementDemoState extends State<StateManagementDemo> {
                     ),
                   ),
                   child: const Text(
-                    'This demo shows how setState() updates the UI in real-time. '
-                    'Try clicking the buttons to see the counter change, the color update, '
-                    'and the even/odd indicator respond instantly!',
+                    'This demo now uses Provider with context.watch() for reading state and '
+                    'context.read() for updating state. UI rebuilds happen automatically after '
+                    'notifyListeners() is called.',
                     style: TextStyle(
                       fontSize: 14,
                       color: Colors.amber,
