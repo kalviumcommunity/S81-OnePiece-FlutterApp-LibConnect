@@ -78,6 +78,145 @@ What to test on physical devices:
 - Touch responsiveness
 - Firebase integrations (Auth, Firestore, FCM)
 
+## Android Release Signing and Build
+
+Prerequisite: this workspace currently does not include an `android/` directory. Generate platform folders first (from project root) using:
+
+```bash
+flutter create .
+```
+
+### 2) Generating a Keystore (Signing Key)
+Open terminal in your project folder:
+
+```bash
+keytool -genkey -v -keystore app-release-key.jks -keyalg RSA -keysize 2048 -validity 10000 -alias upload
+```
+
+You will enter:
+- Full name
+- Organizational Unit
+- City
+- State
+- Country Code
+- Password
+
+Place the generated `.jks` file inside:
+
+```text
+android/app/app-release-key.jks
+```
+
+### 3) Storing Keystore Credentials Securely
+Open:
+
+```text
+android/key.properties
+```
+
+Create the file if it does not exist:
+
+```properties
+storePassword=YOUR_PASSWORD
+keyPassword=YOUR_PASSWORD
+keyAlias=upload
+storeFile=app-release-key.jks
+```
+
+Do not upload this file to GitHub; always use `.gitignore`.
+
+Recommended `.gitignore` entries:
+
+```gitignore
+android/key.properties
+android/app/*.jks
+android/app/*.keystore
+```
+
+### 4) Linking the Keystore in Gradle
+Edit:
+
+```text
+android/app/build.gradle
+```
+
+Inside `android {}`:
+
+```gradle
+signingConfigs {
+  release {
+    keyAlias keystoreProperties['keyAlias']
+    keyPassword keystoreProperties['keyPassword']
+    storeFile file(keystoreProperties['storeFile'])
+    storePassword keystoreProperties['storePassword']
+  }
+}
+
+buildTypes {
+  release {
+    signingConfig signingConfigs.release
+    shrinkResources false
+    minifyEnabled false
+  }
+}
+```
+
+### 5) Building a Release APK
+Run:
+
+```bash
+flutter build apk --release
+```
+
+Output:
+
+```text
+build/app/outputs/flutter-apk/app-release.apk
+```
+
+Use this for manual distribution or testing.
+
+### 6) Building a Release App Bundle (AAB)
+Google Play requires AAB, not APK.
+
+```bash
+flutter build appbundle --release
+```
+
+Output:
+
+```text
+build/app/outputs/bundle/release/app-release.aab
+```
+
+Upload this to Google Play Console.
+
+### 7) Verifying the Release Build
+Check versioning in:
+
+```text
+pubspec.yaml
+```
+
+Set:
+
+```yaml
+version: 1.0.0+1
+```
+
+Use incremental build numbers.
+
+Test release APK on a physical device:
+
+```bash
+adb install app-release.apk
+```
+
+Ensure:
+- No debug banners
+- Firebase works in release mode
+- No crashes or missing permissions
+
 ## Google Maps Setup in Flutter
 
 ### 1) Why User Location & Markers Are Important
