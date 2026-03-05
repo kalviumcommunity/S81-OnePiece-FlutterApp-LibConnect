@@ -25,6 +25,11 @@ service cloud.firestore {
       match /preferences/{preference} {
         allow read, write: if request.auth != null && request.auth.uid == userId;
       }
+
+      // Subcollection: User items (CRUD demo)
+      match /items/{itemId} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
     }
     
     // ========================================================================
