@@ -217,6 +217,103 @@ Ensure:
 - Firebase works in release mode
 - No crashes or missing permissions
 
+## Publishing to Google Play Console
+
+### 3) Create a New App in Google Play Console
+Go to:
+
+```text
+https://play.google.com/console
+```
+
+Click **Create App** and enter:
+- App name
+- Default language
+- App type (App / Game)
+- Free or paid
+- Developer policies acknowledgment
+
+Then click **Create**.
+
+### 4) Preparing Store Listing
+You must fill out:
+
+App details:
+- App name
+- Short description
+- Full description
+
+Graphics:
+- App icon (512x512)
+- Feature graphic
+- Phone screenshots (mandatory)
+- Tablet screenshots (optional)
+
+Categorization:
+- Category and type
+- Content rating questionnaire
+
+Privacy policy:
+- A hosted privacy policy URL
+- Required for any app that collects data (Firebase apps included)
+
+### 5) Uploading Your Release AAB File
+Navigate to:
+
+```text
+Production → Releases → Create New Release
+```
+
+Upload:
+
+```text
+app-release.aab
+```
+
+This is the required format for Play Store.
+
+Add:
+- Release notes
+- Version code + version name (from `pubspec.yaml`)
+
+### 6) Testing Before Publishing
+Use:
+
+Internal testing:
+- Upload AAB
+- Add testers via email
+- Test updates quickly
+
+Closed testing:
+- Larger group testing
+- Good for pre-release QA
+
+Open testing:
+- Public beta version
+- Visible in Play Store with "Early Access" tag
+
+### 7) Submitting for Review
+Once testing is complete:
+- Move build to Production
+- Complete all policy checks
+- Submit for Google review
+
+Review time can take:
+- ~24 hours (typical)
+- Up to 7 days for new developer accounts
+
+### 8) After Publishing
+Your app will become live on Play Store:
+- Accessible globally
+- Visible in search (after a few hours)
+- Users can install, review, and update it
+
+You can track:
+- Crashes (Firebase Crashlytics recommended)
+- User statistics
+- Installs and uninstalls
+- Performance metrics
+
 ## Google Maps Setup in Flutter
 
 ### 1) Why User Location & Markers Are Important
